@@ -33,7 +33,7 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
         log.warn("AuthorizationDenied: {}", ex.message)
         val body = ErrorResponse(
             status = HttpStatus.FORBIDDEN.value(),
-            error = ex.authorizationResult.toString(),
+            error = HttpStatus.FORBIDDEN.reasonPhrase,
             message = ex.message,
         )
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body)
@@ -44,7 +44,18 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
         log.warn("MissingRequestCookieException: {}", ex.message)
         val body = ErrorResponse(
             status = HttpStatus.BAD_REQUEST.value(),
-            error = ex.titleMessageCode,
+            error = HttpStatus.BAD_REQUEST.reasonPhrase,
+            message = ex.message,
+        )
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body)
+    }
+
+    @ExceptionHandler(IllegalArgumentException::class)
+    fun handleIllegalArgumentException(ex: IllegalArgumentException): ResponseEntity<ErrorResponse> {
+        log.warn("IllegalArgumentException: {}", ex.message)
+        val body = ErrorResponse(
+            status = HttpStatus.BAD_REQUEST.value(),
+            error = HttpStatus.BAD_REQUEST.reasonPhrase,
             message = ex.message,
         )
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body)
@@ -54,7 +65,6 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
     fun handleDomainException(
         ex: CustomException,
     ): ResponseEntity<ErrorResponse> {
-        log.warn("Validation failed: ", ex)
         val body = ErrorResponse(
             status = ex.httpStatus.value(),
             error = ex.httpStatus.reasonPhrase,
