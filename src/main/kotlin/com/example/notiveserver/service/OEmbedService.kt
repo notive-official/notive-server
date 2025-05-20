@@ -6,19 +6,27 @@ import com.example.notiveserver.exception.OEmbedException
 import com.example.notiveserver.exception.code.OEmbedErrorCode
 import org.jsoup.Jsoup
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.data.redis.core.ReactiveRedisOperations
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import java.net.URI
+import java.time.Duration
 
 @Service
 class OEmbedService(
     @Qualifier("oEmbedClient")
     private val webClient: WebClient,
-    private val oEmbedProviderService: OEmbedProviderService
+    private val oEmbedProviderService: OEmbedProviderService,
+    private val redisOps: ReactiveRedisOperations<String, OEmbedResponse>
 ) {
-    // 2) robots.txt 검사
+
+    companion object {
+        @JvmStatic
+        private val CACHE_TTL_HOURS = Duration.ofHours(1)
+    }
+
     private fun isAllowedByRobots(targetUrl: String): Mono<Boolean> {
         val uri = URI.create(targetUrl)
         val robotsUrl = "${uri.scheme}://${uri.host}/robots.txt"
@@ -35,10 +43,9 @@ class OEmbedService(
                     .map { it.removePrefix("Disallow:").trim() }
                 disallows.none { dis -> dis == "/" || path.startsWith(dis) }
             }
-            .onErrorReturn(true) // robots.txt 접근 실패 시 기본 허용
+            .onErrorReturn(true)
     }
 
-    // 3) Open Graph 메타 파싱
     private fun parseOpenGraph(targetUrl: String): Mono<OEmbedResponse> {
         return webClient.get()
             .uri(targetUrl)
@@ -88,23 +95,39 @@ class OEmbedService(
             .retrieve()
             .onStatus({ it == HttpStatus.UNAUTHORIZED || it == HttpStatus.FORBIDDEN }) { resp ->
                 resp.bodyToMono(String::class.java)
-                    .flatMap { errBody ->
-                        Mono.error(RuntimeException("oEmbed 호출 권한 없음: $errBody"))
+                    .flatMap {
+                        Mono.error(OEmbedException(OEmbedErrorCode.OEMBED_CALL_FORBIDDEN))
                     }
             }
             .bodyToMono(OEmbedResponse::class.java)
     }
 
-    // 4) 최종 분기 로직
     fun fetchOEmbed(targetUrl: String): Mono<OEmbedResponse> {
-        val endpoint = oEmbedProviderService.findOEmbedEndpoint(targetUrl)
-        if (endpoint != null) return fetchOEmbedData(endpoint, targetUrl)
+        val cacheKey = "oembed:$targetUrl"
 
-        return isAllowedByRobots(targetUrl)
-            .flatMap { allowed ->
-                if (!allowed) Mono.error(OEmbedException(OEmbedErrorCode.ROBOTS_FORBIDDEN))
-                else parseOpenGraph(targetUrl)
+        return redisOps.opsForValue().get(cacheKey)
+            .flatMap { cached ->
+                Mono.just(cached)
             }
-            .cache()
+            .switchIfEmpty(
+                Mono.defer {
+                    val fetchMono = oEmbedProviderService.findOEmbedEndpoint(targetUrl)
+                        ?.let { endpoint ->
+                            fetchOEmbedData(endpoint, targetUrl)
+                        }
+                        ?: isAllowedByRobots(targetUrl)
+                            .flatMap { allowed ->
+                                if (!allowed) Mono.error(OEmbedException(OEmbedErrorCode.ROBOTS_FORBIDDEN))
+                                else parseOpenGraph(targetUrl)
+                            }
+
+                    fetchMono.flatMap { response ->
+                        redisOps
+                            .opsForValue()
+                            .set(cacheKey, response, CACHE_TTL_HOURS)
+                            .thenReturn(response)
+                    }
+                }
+            )
     }
 }

@@ -6,6 +6,7 @@ import com.example.notiveserver.dto.user.ProfileResDto
 import com.example.notiveserver.security.CustomUser
 import com.example.notiveserver.service.S3Service
 import com.example.notiveserver.service.UserService
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -19,6 +20,7 @@ import java.io.IOException
 class UserController(
     private val userService: UserService,
     private val s3Service: S3Service,
+    @Value("\${cloud.aws.cloudfront.domain}") private val cloudFrontDomain: String
 ) {
 
     @GetMapping("/header")
@@ -30,7 +32,7 @@ class UserController(
             HeaderResDto(
                 userId,
                 user.nickname,
-                "https://d210c6t8c7wtwt.cloudfront.net/" + user.profileImage
+                cloudFrontDomain + user.profileImage
             )
         )
     }
