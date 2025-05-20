@@ -1,20 +1,26 @@
 package com.example.notiveserver.controller
 
+import com.example.notiveserver.common.enums.ImageCategory
 import com.example.notiveserver.dto.user.HeaderResDto
 import com.example.notiveserver.dto.user.ProfileResDto
 import com.example.notiveserver.security.CustomUser
+import com.example.notiveserver.service.S3Service
 import com.example.notiveserver.service.UserService
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
+import java.io.IOException
+
 
 @RestController
 @RequestMapping("/api/user")
 class UserController(
     private val userService: UserService,
+    private val s3Service: S3Service,
+    @Value("\${cloud.aws.cloudfront.domain}") private val cloudFrontDomain: String
 ) {
 
     @GetMapping("/header")
@@ -22,7 +28,13 @@ class UserController(
     fun header(@AuthenticationPrincipal auth: CustomUser): ResponseEntity<HeaderResDto> {
         val userId = auth.getUserId()
         val user = userService.findOneByUserId(userId)
-        return ResponseEntity.ok(HeaderResDto(userId, user.nickname, user.profileImage))
+        return ResponseEntity.ok(
+            HeaderResDto(
+                userId,
+                user.nickname,
+                cloudFrontDomain + user.profileImage
+            )
+        )
     }
 
     @GetMapping("/profile")
@@ -39,4 +51,13 @@ class UserController(
             )
         )
     }
+
+    @PutMapping("/profile/image")
+    @PreAuthorize("isAuthenticated()")
+    @Throws(IOException::class)
+    fun coverImageUpload(@RequestParam("file") file: MultipartFile): String {
+        val amazonBucket: String = s3Service.saveFile(file, ImageCategory.PROFILE)
+        return amazonBucket
+    }
+
 }
