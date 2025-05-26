@@ -1,14 +1,22 @@
 package com.example.notiveserver.common.util
 
+import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseCookie
+import org.springframework.web.util.WebUtils
 import java.time.Duration
 
 object CookieUtil {
 
-    fun createRefreshTokenCookie(refreshToken: String, domain: String): ResponseCookie {
-        return ResponseCookie.from("refreshToken", refreshToken)
+    private const val REFRESH_TOKEN_HEADER = "refreshToken"
+
+    fun setRefreshTokenCookie(
+        response: HttpServletResponse,
+        refreshToken: String,
+        domain: String
+    ) {
+        val refreshTokenCookie = ResponseCookie.from(REFRESH_TOKEN_HEADER, refreshToken)
             .httpOnly(true)
             .secure(true)
             .domain(domain)
@@ -16,10 +24,11 @@ object CookieUtil {
             .sameSite("Strict")
             .maxAge(Duration.ofDays(7))
             .build()
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
     }
 
     fun clearRefreshTokenCookie(response: HttpServletResponse, domain: String) {
-        val expiredCookie = ResponseCookie.from("refreshToken", "")
+        val expiredCookie = ResponseCookie.from(REFRESH_TOKEN_HEADER, "")
             .httpOnly(true)
             .secure(true)
             .domain(domain)
@@ -29,4 +38,7 @@ object CookieUtil {
             .build()
         response.addHeader(HttpHeaders.SET_COOKIE, expiredCookie.toString())
     }
+
+    fun getRefreshTokenCookie(request: HttpServletRequest): String? =
+        WebUtils.getCookie(request, REFRESH_TOKEN_HEADER)?.value
 }

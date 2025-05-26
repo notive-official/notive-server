@@ -1,5 +1,6 @@
 package com.example.notiveserver.security
 
+import com.example.notiveserver.common.util.CookieUtil
 import com.example.notiveserver.service.AuthService
 import io.jsonwebtoken.ExpiredJwtException
 import jakarta.servlet.FilterChain
@@ -9,7 +10,6 @@ import org.springframework.http.HttpHeaders
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
-import org.springframework.web.util.WebUtils
 
 @Component
 class JwtAuthenticationFilter(
@@ -28,7 +28,7 @@ class JwtAuthenticationFilter(
                 SecurityContextHolder.getContext().authentication = auth
             }
         } catch (ex: ExpiredJwtException) {
-            val refreshToken = WebUtils.getCookie(request, "refreshToken")?.value
+            val refreshToken = CookieUtil.getRefreshTokenCookie(request)
             if (refreshToken != null && jwtProvider.validateToken(refreshToken)) {
                 val accessToken = authService.reissueAccessToken(refreshToken)
                 response.setHeader(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")

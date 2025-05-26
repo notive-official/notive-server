@@ -5,13 +5,11 @@ import com.example.notiveserver.exception.AuthException
 import com.example.notiveserver.exception.code.AuthErrorCode
 import com.example.notiveserver.security.CustomUser
 import com.example.notiveserver.security.JwtTokenProvider
-import com.example.notiveserver.service.AuthService
 import com.example.notiveserver.service.TokenService
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseCookie
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.context.SecurityContextHolder
@@ -20,7 +18,6 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api/auth")
 class AuthController(
-    private val authService: AuthService,
     private val jwtTokenProvider: JwtTokenProvider,
     private val tokenService: TokenService,
 
@@ -34,8 +31,7 @@ class AuthController(
         val authentication = SecurityContextHolder.getContext().authentication
         val refreshToken = jwtTokenProvider.createRefreshToken(authentication)
 
-        val cookie: ResponseCookie = CookieUtil.createRefreshTokenCookie(refreshToken, cookieDomain)
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString())
+        CookieUtil.setRefreshTokenCookie(response, refreshToken, cookieDomain)
         response.sendRedirect(loginRedirectUrl)
     }
 

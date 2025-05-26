@@ -8,15 +8,21 @@ import java.time.Duration
 class TokenService(
     private val stringRedisTemplate: StringRedisTemplate
 ) {
+    companion object {
+        const val REFRESH_TOKEN_KEY_PREFIX = "refreshToken:"
+    }
+
+    private val Long.refreshTokenKey: String
+        get() = REFRESH_TOKEN_KEY_PREFIX + this
+
     fun saveRefreshToken(userId: Long, token: String, ttl: Duration) {
         stringRedisTemplate.opsForValue()
-            .set("refreshToken:$userId", token, ttl)
+            .set(userId.refreshTokenKey, token, ttl)
     }
 
     fun canReissue(userId: Long, oldRefreshToken: String): Boolean =
-        oldRefreshToken == stringRedisTemplate.opsForValue().get("refreshToken:$userId")
+        oldRefreshToken == stringRedisTemplate.opsForValue().get(userId.refreshTokenKey)
 
     fun deleteRefreshToken(userId: Long): String? =
-        stringRedisTemplate.opsForValue().getAndDelete("refreshToken:$userId")
-
+        stringRedisTemplate.opsForValue().getAndDelete(userId.refreshTokenKey)
 }

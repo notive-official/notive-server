@@ -25,14 +25,14 @@ class JwtTokenProvider(
     private val key = Keys.hmacShaKeyFor(secretKey.toByteArray())
 
     private fun createToken(user: CustomUser, expireMillis: Long): String {
-        val email = user.username
+        val username = user.username
         val userId = user.getUserId()
         val roles = user.authorities.map { it.authority }
 
         val now = Date()
         val expiry = Date(now.time + expireMillis)
         return Jwts.builder()
-            .setSubject(email)
+            .setSubject(username)
             .claim("userId", userId)
             .claim("roles", roles)
             .setIssuedAt(now)
@@ -49,7 +49,11 @@ class JwtTokenProvider(
     fun createRefreshToken(authentication: Authentication): String {
         val user = (authentication.principal as CustomUser)
         val refreshToken = createToken(user, refreshExpireMillis)
-        tokenService.saveRefreshToken(user.getUserId(), refreshToken, Duration.ofMillis(refreshExpireMillis))
+        tokenService.saveRefreshToken(
+            user.getUserId(),
+            refreshToken,
+            Duration.ofMillis(refreshExpireMillis)
+        )
         return refreshToken
     }
 
@@ -70,5 +74,7 @@ class JwtTokenProvider(
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token)
             true
-        } catch (e: JwtException) { false }
+        } catch (e: JwtException) {
+            false
+        }
 }
