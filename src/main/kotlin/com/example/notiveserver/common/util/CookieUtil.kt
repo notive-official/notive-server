@@ -21,7 +21,7 @@ object CookieUtil {
             .secure(true)
             .domain(domain)
             .path("/")
-            .sameSite("Strict")
+            .sameSite("None")
             .maxAge(Duration.ofDays(7))
             .build()
         response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
@@ -34,7 +34,7 @@ object CookieUtil {
             .domain(domain)
             .path("/")
             .maxAge(0)
-            .sameSite("Strict")
+            .sameSite("None")
             .build()
         response.addHeader(HttpHeaders.SET_COOKIE, expiredCookie.toString())
     }

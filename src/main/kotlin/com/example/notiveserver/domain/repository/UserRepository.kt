@@ -1,6 +1,6 @@
 package com.example.notiveserver.domain.repository
 
-import com.example.notiveserver.domain.entity.User
+import com.example.notiveserver.domain.model.user.User
 import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository

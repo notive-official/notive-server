@@ -1,9 +1,9 @@
 package com.example.notiveserver.config
 
-import com.example.notiveserver.security.CustomOidcUserService
-import com.example.notiveserver.security.JwtAuthenticationFilter
-import com.example.notiveserver.security.OidcLoginFailureHandler
-import com.example.notiveserver.security.OidcLoginSuccessHandler
+import com.example.notiveserver.infrastructure.security.CustomOidcUserService
+import com.example.notiveserver.infrastructure.security.JwtAuthenticationFilter
+import com.example.notiveserver.infrastructure.security.OidcLoginFailureHandler
+import com.example.notiveserver.infrastructure.security.OidcLoginSuccessHandler
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity

@@ -1,6 +1,6 @@
 package com.example.notiveserver.config
 
-import com.example.notiveserver.dto.oembed.OEmbedResponse
+import com.example.notiveserver.application.dto.oembed.OEmbedInfo
 import io.lettuce.core.resource.ClientResources
 import io.lettuce.core.resource.DefaultClientResources
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties
@@ -69,10 +69,10 @@ class RedisConfig(private val props: RedisProperties) {
     @Bean
     fun reactiveOEmbedRedisOperations(
         factory: ReactiveRedisConnectionFactory,
-    ): ReactiveRedisOperations<String, OEmbedResponse> {
-        val serializer = Jackson2JsonRedisSerializer(OEmbedResponse::class.java)
+    ): ReactiveRedisOperations<String, OEmbedInfo> {
+        val serializer = Jackson2JsonRedisSerializer(OEmbedInfo::class.java)
         val context = RedisSerializationContext
-            .newSerializationContext<String, OEmbedResponse>(StringRedisSerializer())
+            .newSerializationContext<String, OEmbedInfo>(StringRedisSerializer())
             .value(RedisSerializationContext.SerializationPair.fromSerializer(serializer))
             .build()
         return ReactiveRedisTemplate(factory, context)
