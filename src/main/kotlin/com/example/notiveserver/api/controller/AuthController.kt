@@ -42,7 +42,7 @@ class AuthController(
         response: HttpServletResponse
     ) {
         val authentication = jwtTokenProvider.getAuthentication(refreshToken)
-        val userId = (authentication.principal as CustomUser).getUserId()
+        val userId = (authentication.principal as CustomUser).getId()
         if (!jwtTokenProvider.validateToken(refreshToken) ||
             !tokenService.canReissue(userId, refreshToken)
         ) {
@@ -55,7 +55,7 @@ class AuthController(
     @PostMapping("/logout")
     @PreAuthorize("isAuthenticated()")
     fun logout(@AuthenticationPrincipal user: CustomUser, response: HttpServletResponse) {
-        tokenService.deleteRefreshToken(user.getUserId())
+        tokenService.deleteRefreshToken(user.getId())
         CookieUtil.clearRefreshTokenCookie(response, cookieDomain)
     }
 }

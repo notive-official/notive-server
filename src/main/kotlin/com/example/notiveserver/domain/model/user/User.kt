@@ -4,15 +4,21 @@ import com.example.notiveserver.domain.model.Timestamped
 import jakarta.persistence.*
 import org.hibernate.annotations.SQLDelete
 import org.hibernate.annotations.SQLRestriction
+import org.hibernate.annotations.UuidGenerator
+import java.util.*
 
 @Entity
-@Table(name = "user")
+@Table(name = "users")
 @SQLDelete(sql = "UPDATE user SET deleted_at = CURRENT_TIMESTAMP where id = ?")
 @SQLRestriction("deleted_at is NULL")
 class User(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null,
+    @GeneratedValue
+    @UuidGenerator(
+        style = UuidGenerator.Style.TIME
+    )
+    @Column(columnDefinition = "BINARY(16)")
+    var id: UUID? = null,
 
     @Column(name = "name", nullable = false, length = 100) // 최대 30자
     var name: String,
@@ -26,7 +32,7 @@ class User(
     @Column(name = "profile_image")
     var profileImage: String? = null,
 
-    @Column(name = "social_id", nullable = false, unique = true)
+    @Column(name = "social_id", nullable = false, unique = true, updatable = false)
     var socialId: String,
 
     @ManyToMany(fetch = FetchType.LAZY)

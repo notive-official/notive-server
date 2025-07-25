@@ -6,12 +6,13 @@ import com.example.notiveserver.domain.model.user.User
 import com.example.notiveserver.domain.repository.UserRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class UserService(
     private val userRepository: UserRepository
 ) {
-    fun findOneByUserId(userId: Long): User =
+    fun findOneByUserId(userId: UUID): User =
         userRepository.findByIdOrNull(userId)
             ?: throw UserException(UserErrorCode.USER_NOT_FOUND)
 }

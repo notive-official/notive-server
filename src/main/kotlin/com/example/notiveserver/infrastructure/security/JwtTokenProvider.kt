@@ -27,7 +27,7 @@ class JwtTokenProvider(
 
     private fun createToken(user: CustomUser, expireMillis: Long): String {
         val username = user.username
-        val userId = user.getUserId()
+        val userId = user.getId()
         val roles = user.authorities.map { it.authority }
 
         val now = Date()
@@ -51,7 +51,7 @@ class JwtTokenProvider(
         val user = (authentication.principal as CustomUser)
         val refreshToken = createToken(user, refreshExpireMillis)
         tokenService.saveRefreshToken(
-            user.getUserId(),
+            user.getId(),
             refreshToken,
             Duration.ofMillis(refreshExpireMillis)
         )
@@ -61,7 +61,8 @@ class JwtTokenProvider(
     fun getAuthentication(token: String): Authentication {
         val claims = Jwts.parserBuilder().setSigningKey(key).build()
             .parseClaimsJws(token).body
-        val userId = claims["userId"].toString().toLong()
+        val userId: UUID = claims.get("userId", String::class.java)
+            .let(UUID::fromString)
         val authorities = (claims["roles"] as List<*>)
             .map { SimpleGrantedAuthority(it as String) }
         val principal = CustomUser(userId, claims.subject, authorities.map { it.authority })

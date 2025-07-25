@@ -13,21 +13,22 @@ import java.util.*
 @Service
 class S3StorageClient(
     @Value("\${cloud.aws.s3.bucket}") private val bucket: String,
-    @Value("\${cloud.aws.cloudfront.domain}") private val cloudFrontDomain: String,
     private val amazonS3: AmazonS3
 ) {
 
     @Throws(IOException::class)
-    fun saveFile(multipartFile: MultipartFile, imageCategoryType: ImageCategory): String {
+    fun saveImage(multipartFile: MultipartFile, imageCategory: ImageCategory): String {
         val originalFilename = multipartFile.originalFilename
 
         val metadata = ObjectMetadata()
         metadata.contentLength = multipartFile.size
         metadata.contentType = multipartFile.contentType
 
-        val uuid = UUID.randomUUID().toString()
-        val filePath = "${imageCategoryType.directoryPath}/${uuid}_${originalFilename}"
+        val directoryPath = imageCategory.getDirectoryPath()
+        val fileName = "${UUID.randomUUID()}-$originalFilename"
+        val filePath = "$directoryPath/$fileName"
+
         amazonS3.putObject(bucket, filePath, multipartFile.inputStream, metadata)
-        return "$cloudFrontDomain/$filePath"
+        return filePath
     }
 }

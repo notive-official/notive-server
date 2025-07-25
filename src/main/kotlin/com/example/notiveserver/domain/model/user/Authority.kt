@@ -3,7 +3,7 @@ package com.example.notiveserver.domain.model.user
 import jakarta.persistence.*
 
 @Entity
-@Table(name = "authority")
+@Table(name = "authorities")
 class Authority(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

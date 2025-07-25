@@ -16,6 +16,7 @@ abstract class Timestamped {
         name = "created_at",
         nullable = false,
         updatable = false,
+        insertable = false,
         columnDefinition = "DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3)"
     )
     var createdAt: LocalDateTime? = null

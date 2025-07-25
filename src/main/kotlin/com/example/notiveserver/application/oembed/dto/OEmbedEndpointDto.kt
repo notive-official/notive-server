@@ -1,6 +1,6 @@
-package com.example.notiveserver.api.dto.archive
+package com.example.notiveserver.application.oembed.dto
 
-data class OEmbedEndpoint(
+data class OEmbedEndpointDto(
     val schemes: List<String>?,
     val url: String,
     val formats: List<String>?

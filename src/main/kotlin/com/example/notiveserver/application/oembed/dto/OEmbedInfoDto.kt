@@ -1,4 +1,4 @@
-package com.example.notiveserver.application.dto.oembed
+package com.example.notiveserver.application.oembed.dto
 
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonCreator
@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class OEmbedInfo @JsonCreator constructor(
+data class OEmbedInfoDto @JsonCreator constructor(
     @JsonProperty("version")
     val version: String? = null,
 

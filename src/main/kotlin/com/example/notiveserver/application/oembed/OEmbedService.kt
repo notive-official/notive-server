@@ -1,7 +1,7 @@
 package com.example.notiveserver.application.oembed
 
 
-import com.example.notiveserver.application.dto.oembed.OEmbedInfo
+import com.example.notiveserver.application.oembed.dto.OEmbedInfoDto
 import com.example.notiveserver.common.exception.OEmbedException
 import com.example.notiveserver.common.exception.code.OEmbedErrorCode
 import org.springframework.stereotype.Service
@@ -15,18 +15,12 @@ class OEmbedService(
     private val ogParser: OpenGraphParser,
 ) {
 
-    fun getOEmbed(targetUrl: String): Mono<OEmbedInfo> =
+    fun getOEmbed(targetUrl: String): Mono<OEmbedInfoDto> =
         cache.get(targetUrl)
             .switchIfEmpty(tryFetch(targetUrl))
             .flatMap { info -> cache.put(targetUrl, info) }
 
-    private fun tryFetch(url: String): Mono<OEmbedInfo> =
+    private fun tryFetch(url: String): Mono<OEmbedInfoDto> =
         oEmbedClient.fetch(url)
-            .switchIfEmpty(
-                robots.isAllowed(url)
-                    .flatMap { allowed ->
-                        if (!allowed) Mono.error(OEmbedException(OEmbedErrorCode.ROBOTS_FORBIDDEN))
-                        else ogParser.parse(url)
-                    }
-            )
+            .switchIfEmpty(Mono.error(OEmbedException(OEmbedErrorCode.NO_DOMAIN_SUPPORT)))
 }

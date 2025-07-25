@@ -1,6 +1,6 @@
 package com.example.notiveserver.application.oembed
 
-import com.example.notiveserver.application.dto.oembed.OEmbedInfo
+import com.example.notiveserver.application.oembed.dto.OEmbedInfoDto
 import com.example.notiveserver.common.exception.OEmbedException
 import com.example.notiveserver.common.exception.code.OEmbedErrorCode
 import com.example.notiveserver.infrastructure.oembed.OEmbedProviderRegistry
@@ -21,14 +21,14 @@ class OEmbedHttpClient(
     private val providerRegistry: OEmbedProviderRegistry
 ) {
 
-    fun fetch(targetUrl: String): Mono<OEmbedInfo> =
+    fun fetch(targetUrl: String): Mono<OEmbedInfoDto> =
         Mono.justOrEmpty(providerRegistry.findOEmbedEndpoint(targetUrl))
             .flatMap { endpoint ->
                 webClient.get()
                     .uri(buildOEmbedUri(endpoint, targetUrl))
                     .retrieve()
                     .onStatus(::isForbidden, ::oEmbedForbidden)
-                    .bodyToMono(OEmbedInfo::class.java)
+                    .bodyToMono(OEmbedInfoDto::class.java)
             }
 
     private fun buildOEmbedUri(oEmbedUrl: String, targetUrl: String): (UriBuilder) -> URI = { b ->

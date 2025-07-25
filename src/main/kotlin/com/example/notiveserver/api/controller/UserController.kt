@@ -26,13 +26,13 @@ class UserController(
     @GetMapping("/header")
     @PreAuthorize("isAuthenticated()")
     fun header(@AuthenticationPrincipal auth: CustomUser): ResponseEntity<HeaderRes> {
-        val userId = auth.getUserId()
+        val userId = auth.getId()
         val user = userService.findOneByUserId(userId)
         return ResponseEntity.ok(
             HeaderRes(
                 userId,
                 user.nickname,
-                cloudFrontDomain + user.profileImage
+                "$cloudFrontDomain${user.profileImage}"
             )
         )
     }
@@ -40,7 +40,7 @@ class UserController(
     @GetMapping("/profile")
     @PreAuthorize("isAuthenticated()")
     fun profile(@AuthenticationPrincipal auth: CustomUser): ResponseEntity<ProfileRes> {
-        val userId = auth.getUserId()
+        val userId = auth.getId()
         val user = userService.findOneByUserId(userId)
         return ResponseEntity.ok(
             ProfileRes(
@@ -55,9 +55,12 @@ class UserController(
     @PutMapping("/profile/image")
     @PreAuthorize("isAuthenticated()")
     @Throws(IOException::class)
-    fun coverImageUpload(@RequestParam("file") file: MultipartFile): String {
-        val amazonBucket: String = s3StorageClient.saveFile(file, ImageCategory.PROFILE)
-        return amazonBucket
+    fun coverImageUpload(
+        @AuthenticationPrincipal auth: CustomUser,
+        @RequestParam("file") file: MultipartFile
+    ): String {
+        val filePath: String = s3StorageClient.saveImage(file, ImageCategory.PROFILE)
+        return "$cloudFrontDomain$filePath"
     }
 
 }

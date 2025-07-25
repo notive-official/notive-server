@@ -1,7 +1,7 @@
 package com.example.notiveserver.infrastructure.oembed
 
-import com.example.notiveserver.api.dto.archive.OEmbedEndpoint
-import com.example.notiveserver.application.dto.oembed.OEmbedProvider
+import com.example.notiveserver.application.oembed.dto.OEmbedEndpointDto
+import com.example.notiveserver.application.oembed.dto.OEmbedProviderDto
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.stereotype.Component
@@ -14,10 +14,10 @@ class OEmbedProviderRegistry(
     private val webClient: WebClient,
 ) {
 
-    private val providers: List<OEmbedProvider> by lazy { loadProviders() }
+    private val providers: List<OEmbedProviderDto> by lazy { loadProviders() }
 
-    private fun loadProviders(): List<OEmbedProvider> {
-        val typeRef = object : ParameterizedTypeReference<List<OEmbedProvider>>() {}
+    private fun loadProviders(): List<OEmbedProviderDto> {
+        val typeRef = object : ParameterizedTypeReference<List<OEmbedProviderDto>>() {}
         val rawProviders = webClient.get()
             .uri("https://oembed.com/providers.json")
             .retrieve()
@@ -30,7 +30,7 @@ class OEmbedProviderRegistry(
         }
     }
 
-    private fun OEmbedEndpoint.normalize(): OEmbedEndpoint {
+    private fun OEmbedEndpointDto.normalize(): OEmbedEndpointDto {
         val schemes = this.schemes
             .orEmpty()
             .flatMap { original ->

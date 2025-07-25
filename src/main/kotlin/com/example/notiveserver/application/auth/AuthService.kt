@@ -17,7 +17,7 @@ class AuthService(
         val authentication = jwtTokenProvider.getAuthentication(refreshToken)
         val user = (authentication.principal as CustomUser)
 
-        if (!tokenService.canReissue(user.getUserId(), refreshToken)) {
+        if (!tokenService.canReissue(user.getId(), refreshToken)) {
             throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "리프레시 토큰이 일치하지 않습니다")
         }
         return jwtTokenProvider.createAccessToken(authentication)

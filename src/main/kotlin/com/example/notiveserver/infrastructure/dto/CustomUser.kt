@@ -3,14 +3,15 @@ package com.example.notiveserver.infrastructure.dto
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
+import java.util.*
 
 class CustomUser(
-    private val userId: Long,
+    private val userId: UUID,
     private val nickname: String,
     private val roles: List<String>
 ) : UserDetails {
 
-    fun getUserId(): Long = userId
+    fun getId(): UUID = userId
 
     override fun getUsername(): String = nickname
 
