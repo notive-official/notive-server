@@ -1,13 +1,18 @@
 package com.example.notiveserver.application.archive
 
-import com.example.notiveserver.api.dto.archive.BlockRaw
+import com.example.notiveserver.api.dto.archive.BlockForm
 import com.example.notiveserver.application.archive.dto.BlockInfoDto
+import com.example.notiveserver.application.archive.dto.PayloadDto
+import com.example.notiveserver.common.enums.BlockType
 import com.example.notiveserver.common.enums.ImageCategory
 import com.example.notiveserver.common.exception.ArchiveException
 import com.example.notiveserver.common.exception.code.ArchiveErrorCode
 import com.example.notiveserver.domain.model.archive.Archive
 import com.example.notiveserver.domain.model.archive.ArchiveBlock
-import com.example.notiveserver.domain.repository.*
+import com.example.notiveserver.domain.repository.ArchiveBlockRepository
+import com.example.notiveserver.domain.repository.ArchiveRepository
+import com.example.notiveserver.domain.repository.GroupRepository
+import com.example.notiveserver.domain.repository.UserRepository
 import com.example.notiveserver.infrastructure.s3.S3StorageClient
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
@@ -19,9 +24,9 @@ class ArchiveService(
     private val archiveRepository: ArchiveRepository,
     private val archiveBlockRepository: ArchiveBlockRepository,
     private val groupRepository: GroupRepository,
-    private val tagRepository: TagRepository,
     private val s3StorageClient: S3StorageClient,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val tagService: TagService,
 ) {
 
     @Transactional
@@ -32,61 +37,53 @@ class ArchiveService(
         isPublic: Boolean,
         groupId: UUID,
         tags: List<String>,
-        contents: List<BlockInfoDto>
+        blocks: List<BlockInfoDto>
     ): Archive {
-        val thumbnailPath: String? =
-            thumbnailImage
-                ?.takeIf { !it.isEmpty }
-                ?.let { file ->
-                    s3StorageClient.saveImage(file, ImageCategory.ARCHIVE_THUMBNAIL)
-                }
-        val user = userRepository.getReferenceById(userId)
-        val group = groupRepository.getReferenceById(groupId)
-        val archive =
-            archiveRepository.save(
-                Archive.create(
-                    thumbnailPath,
-                    title,
-                    tags,
-                    isPublic,
-                    group,
-                    user,
-                    tagRepository
-                )
+        val thumbnailPath = thumbnailImage?.let { file ->
+            s3StorageClient.saveImage(file, ImageCategory.ARCHIVE_THUMBNAIL)
+        }
+        val archive = archiveRepository.save(
+            Archive.create(
+                thumbnailPath = thumbnailPath,
+                title = title,
+                isPublic = isPublic,
+                tags = tagService.getOrSave(tags),
+                group = groupRepository.getReferenceById(groupId),
+                writer = userRepository.getReferenceById(userId)
             )
-        saveContentBlocks(contents, archive)
+        )
+        saveArchiveBlocks(blocks, archive.id!!)
         return archive
     }
 
-    @Transactional
-    fun saveContentBlocks(contents: List<BlockInfoDto>, archive: Archive): List<ArchiveBlock> {
-        val contentBlocks = contents.map {
-            ArchiveBlock.create(
-                position = it.position,
-                type = it.blockType,
-                payload = it.payload,
-                archive = archive
-            )
+    fun validateAndGetPayload(block: BlockForm): PayloadDto {
+        return when (block.type) {
+            BlockType.IMAGE ->
+                PayloadDto.File(
+                    block.image ?: throw ArchiveException(ArchiveErrorCode.IMAGE_REQUIRED)
+                )
+
+            else ->
+                PayloadDto.Text(
+                    block.content ?: throw ArchiveException(ArchiveErrorCode.CONTENT_REQUIRED)
+                )
         }
-        return archiveBlockRepository.saveAll(contentBlocks)
     }
 
-    fun convertToBlockInfoWithSavingImage(block: BlockRaw): BlockInfoDto {
-        require(block.image != null) { ArchiveException(ArchiveErrorCode.IMAGE_REQUIRED) }
-        val filePath = s3StorageClient.saveImage(block.image, ImageCategory.ARCHIVE_BLOCK)
-        return BlockInfoDto(
-            position = block.position,
-            blockType = block.blockType,
-            payload = filePath
-        )
-    }
+    @Transactional
+    fun saveArchiveBlocks(blocks: List<BlockInfoDto>, archiveId: UUID): List<ArchiveBlock> {
+        val archive = archiveRepository.getReferenceById(archiveId)
+        val archiveBlocks = blocks.map { block ->
+            when (block.payload) {
+                is PayloadDto.File -> {
+                    val filePath =
+                        s3StorageClient.saveImage(block.payload.file, ImageCategory.ARCHIVE_BLOCK)
+                    block.toArchiveBlock(filePath, archive)
+                }
 
-    fun convertToBlockInfoWithoutSavingImage(block: BlockRaw): BlockInfoDto {
-        require(block.content != null) { ArchiveException(ArchiveErrorCode.CONTENT_REQUIRED) }
-        return BlockInfoDto(
-            position = block.position,
-            blockType = block.blockType,
-            payload = block.content
-        )
+                is PayloadDto.Text -> block.toArchiveBlock(block.payload.text, archive)
+            }
+        }
+        return archiveBlockRepository.saveAll(archiveBlocks)
     }
 }

@@ -1,6 +1,6 @@
 package com.example.notiveserver.api.controller
 
-import com.example.notiveserver.api.dto.archive.ArchiveReq
+import com.example.notiveserver.api.dto.archive.ArchiveFormReq
 import com.example.notiveserver.api.dto.archive.ArchiveRes
 import com.example.notiveserver.api.dto.archive.OEmbedRes
 import com.example.notiveserver.api.dto.archive.group.GroupInfo
@@ -9,9 +9,9 @@ import com.example.notiveserver.api.dto.common.ListRes
 import com.example.notiveserver.application.archive.ArchiveService
 import com.example.notiveserver.application.archive.GroupService
 import com.example.notiveserver.application.archive.TagService
+import com.example.notiveserver.application.archive.dto.BlockInfoDto
 import com.example.notiveserver.application.oembed.OEmbedService
-import com.example.notiveserver.common.enums.BlockType
-import com.example.notiveserver.infrastructure.dto.CustomUser
+import com.example.notiveserver.infrastructure.security.dto.CustomUser
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -56,27 +56,26 @@ class ArchiveController(
     @PreAuthorize("isAuthenticated()")
     fun createArchive(
         @AuthenticationPrincipal auth: CustomUser,
-        @Validated @ModelAttribute form: ArchiveReq
+        @Validated @ModelAttribute form: ArchiveFormReq
     ): ResponseEntity<ArchiveRes> {
-        val contents = form.blocks.map { block ->
-            when (block.blockType) {
-                BlockType.IMAGE -> archiveService.convertToBlockInfoWithSavingImage(block)
-                else -> archiveService.convertToBlockInfoWithoutSavingImage(block)
-            }
+        val blocks: List<BlockInfoDto> = form.blocks.map { block ->
+            val payload = archiveService.validateAndGetPayload(block)
+            BlockInfoDto(position = block.position, type = block.type, payload = payload)
+
         }
         val archive =
             archiveService.saveArchive(
-                auth.getId(),
-                form.thumbnailImage,
-                form.title,
-                form.isPublic,
-                UUID.fromString(form.groupId),
-                form.tags,
-                contents
+                userId = auth.getId(),
+                thumbnailImage = form.thumbnailImage,
+                title = form.title,
+                isPublic = form.isPublic,
+                groupId = UUID.fromString(form.groupId),
+                tags = form.tags,
+                blocks = blocks
             )
         return ResponseEntity.ok(
             ArchiveRes(
-                title = archive.title,
+                archiveId = archive.id!!,
             )
         )
     }
@@ -87,7 +86,7 @@ class ArchiveController(
         val groups = groupService.listUserGroups(user.getId())
         return ResponseEntity.ok(ListRes(groups.map {
             GroupInfo(
-                id = requireNotNull(it.id),
+                id = it.id!!,
                 name = it.name
             )
         }))

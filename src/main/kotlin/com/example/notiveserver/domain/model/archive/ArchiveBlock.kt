@@ -61,5 +61,6 @@ class ArchiveBlock(
             archive: Archive,
             payload: String
         ): ArchiveBlock = type.creator(position, archive, payload)
+
     }
 }

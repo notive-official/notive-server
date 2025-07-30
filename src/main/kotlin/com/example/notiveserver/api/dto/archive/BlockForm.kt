@@ -5,15 +5,15 @@ import com.example.notiveserver.common.enums.BlockType
 import jakarta.validation.constraints.NotNull
 import org.springframework.web.multipart.MultipartFile
 
-data class BlockRaw(
+data class BlockForm(
     @field:NotNull
     val position: Int,
 
     @field:NotNull
-    val blockType: BlockType,
-
-    val content: String? = null,
+    val type: BlockType,
 
     @field:ValidImageFile
-    val image: MultipartFile? = null
+    val image: MultipartFile? = null,
+
+    val content: String? = null
 )

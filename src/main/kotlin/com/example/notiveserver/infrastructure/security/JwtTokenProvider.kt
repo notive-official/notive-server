@@ -1,7 +1,7 @@
 package com.example.notiveserver.infrastructure.security
 
 import com.example.notiveserver.application.auth.TokenService
-import com.example.notiveserver.infrastructure.dto.CustomUser
+import com.example.notiveserver.infrastructure.security.dto.CustomUser
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm

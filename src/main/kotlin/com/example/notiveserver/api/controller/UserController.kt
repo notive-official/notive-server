@@ -4,8 +4,8 @@ import com.example.notiveserver.api.dto.user.HeaderRes
 import com.example.notiveserver.api.dto.user.ProfileRes
 import com.example.notiveserver.application.user.UserService
 import com.example.notiveserver.common.enums.ImageCategory
-import com.example.notiveserver.infrastructure.dto.CustomUser
 import com.example.notiveserver.infrastructure.s3.S3StorageClient
+import com.example.notiveserver.infrastructure.security.dto.CustomUser
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize

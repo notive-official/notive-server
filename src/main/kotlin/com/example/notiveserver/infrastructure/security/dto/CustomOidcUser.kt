@@ -1,4 +1,4 @@
-package com.example.notiveserver.infrastructure.dto
+package com.example.notiveserver.infrastructure.security.dto
 
 import com.example.notiveserver.domain.model.user.User
 import org.springframework.security.core.GrantedAuthority

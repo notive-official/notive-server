@@ -9,5 +9,5 @@ import java.util.*
 interface TagRepository : JpaRepository<Tag, UUID> {
     fun findBySlug(slug: String): Tag?
 
-    fun findDistinctByArchivesWriterId(writerId: UUID): List<Tag>
+    fun findDistinctByArchivesWriterIdOrderBySlugAsc(writerId: UUID): List<Tag>
 }

@@ -1,4 +1,4 @@
-package com.example.notiveserver.infrastructure.dto
+package com.example.notiveserver.infrastructure.security.dto
 
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority

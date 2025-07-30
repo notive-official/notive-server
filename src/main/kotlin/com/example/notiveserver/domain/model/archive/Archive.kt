@@ -2,7 +2,6 @@ package com.example.notiveserver.domain.model.archive
 
 import com.example.notiveserver.domain.model.Timestamped
 import com.example.notiveserver.domain.model.user.User
-import com.example.notiveserver.domain.repository.TagRepository
 import com.fasterxml.jackson.annotation.JsonManagedReference
 import jakarta.persistence.*
 import org.hibernate.annotations.SQLDelete
@@ -33,6 +32,9 @@ class Archive(
     @Column(name = "isPublic", nullable = false)
     var isPublic: Boolean,
 
+//    @Column(name = "repostable", nullable = false)
+//    var repostable: Boolean,
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = false)
     var group: Group,
@@ -55,21 +57,18 @@ class Archive(
         fun create(
             thumbnailPath: String?,
             title: String,
-            rawTags: List<String>,
+            tags: List<Tag>,
             isPublic: Boolean,
             group: Group,
-            writer: User,
-            tagRepo: TagRepository
+            writer: User
         ): Archive {
-            val trimmedTitle = title.trim()
-            val tags = Tag.getOrSave(rawTags, tagRepo).toMutableSet()
             return Archive(
                 thumbnailPath = thumbnailPath,
-                title = trimmedTitle,
+                title = title,
                 isPublic = isPublic,
                 group = group,
                 writer = writer,
-                tags = tags
+                tags = tags.toMutableSet()
             )
         }
     }

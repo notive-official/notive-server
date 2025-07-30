@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Size
 import org.hibernate.validator.constraints.Length
 import org.springframework.web.multipart.MultipartFile
 
-data class ArchiveReq(
+data class ArchiveFormReq(
     @field:ValidImageFile
     val thumbnailImage: MultipartFile? = null,
 
@@ -28,6 +28,6 @@ data class ArchiveReq(
     @field:NotNull
     @field:Size(min = 1, max = 50)
     @field:Valid
-    val blocks: List<BlockRaw>,
+    val blocks: List<BlockForm>,
 )
 

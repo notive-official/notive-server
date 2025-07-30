@@ -1,7 +1,7 @@
 package com.example.notiveserver.infrastructure.security
 
-import com.example.notiveserver.infrastructure.dto.CustomOidcUser
-import com.example.notiveserver.infrastructure.dto.CustomUser
+import com.example.notiveserver.infrastructure.security.dto.CustomOidcUser
+import com.example.notiveserver.infrastructure.security.dto.CustomUser
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken

@@ -1,8 +1,8 @@
 package com.example.notiveserver.application.auth
 
 import com.example.notiveserver.domain.repository.UserRepository
-import com.example.notiveserver.infrastructure.dto.CustomUser
 import com.example.notiveserver.infrastructure.security.JwtTokenProvider
+import com.example.notiveserver.infrastructure.security.dto.CustomUser
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException

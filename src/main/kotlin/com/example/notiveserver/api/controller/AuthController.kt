@@ -4,8 +4,8 @@ import com.example.notiveserver.application.auth.TokenService
 import com.example.notiveserver.common.exception.AuthException
 import com.example.notiveserver.common.exception.code.AuthErrorCode
 import com.example.notiveserver.common.util.CookieUtil
-import com.example.notiveserver.infrastructure.dto.CustomUser
 import com.example.notiveserver.infrastructure.security.JwtTokenProvider
+import com.example.notiveserver.infrastructure.security.dto.CustomUser
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
