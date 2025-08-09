@@ -1,4 +1,4 @@
-package com.example.notiveserver.application.oembed
+package com.example.notiveserver.infrastructure.oembed
 
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient

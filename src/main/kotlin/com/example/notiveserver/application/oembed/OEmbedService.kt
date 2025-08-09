@@ -4,6 +4,7 @@ package com.example.notiveserver.application.oembed
 import com.example.notiveserver.application.oembed.dto.OEmbedInfoDto
 import com.example.notiveserver.common.exception.OEmbedException
 import com.example.notiveserver.common.exception.code.OEmbedErrorCode
+import com.example.notiveserver.infrastructure.oembed.RobotsChecker
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 

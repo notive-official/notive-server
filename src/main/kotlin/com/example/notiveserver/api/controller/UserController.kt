@@ -6,7 +6,6 @@ import com.example.notiveserver.application.user.UserService
 import com.example.notiveserver.common.enums.ImageCategory
 import com.example.notiveserver.infrastructure.s3.S3StorageClient
 import com.example.notiveserver.infrastructure.security.dto.CustomUser
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -20,7 +19,6 @@ import java.io.IOException
 class UserController(
     private val userService: UserService,
     private val s3StorageClient: S3StorageClient,
-    @Value("\${cloud.aws.cloudfront.domain}") private val cloudFrontDomain: String
 ) {
 
     @GetMapping("/header")
@@ -32,7 +30,7 @@ class UserController(
             HeaderRes(
                 userId,
                 user.nickname,
-                "$cloudFrontDomain${user.profileImage}"
+                user.profileImage.filePath
             )
         )
     }
@@ -47,7 +45,7 @@ class UserController(
                 user.name,
                 user.nickname,
                 user.email,
-                user.profileImage
+                user.profileImage.filePath
             )
         )
     }
@@ -59,8 +57,7 @@ class UserController(
         @AuthenticationPrincipal auth: CustomUser,
         @RequestParam("file") file: MultipartFile
     ): String {
-        val filePath: String = s3StorageClient.saveImage(file, ImageCategory.PROFILE)
-        return "$cloudFrontDomain$filePath"
+        return s3StorageClient.saveImage(file, ImageCategory.PROFILE)
     }
 
 }

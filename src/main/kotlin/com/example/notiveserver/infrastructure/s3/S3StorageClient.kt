@@ -26,7 +26,7 @@ class S3StorageClient(
 
         val directoryPath = imageCategory.getDirectoryPath()
         val fileName = "${UUID.randomUUID()}-$originalFilename"
-        val filePath = "$directoryPath/$fileName"
+        val filePath = "$directoryPath/$fileName".trim('/')
 
         amazonS3.putObject(bucket, filePath, multipartFile.inputStream, metadata)
         return filePath

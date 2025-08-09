@@ -3,15 +3,21 @@ package com.example.notiveserver.api.controller
 import com.example.notiveserver.api.dto.archive.ArchiveFormReq
 import com.example.notiveserver.api.dto.archive.ArchiveRes
 import com.example.notiveserver.api.dto.archive.OEmbedRes
-import com.example.notiveserver.api.dto.archive.group.GroupInfo
+import com.example.notiveserver.api.dto.archive.group.GroupDetailRes
 import com.example.notiveserver.api.dto.archive.group.GroupReq
+import com.example.notiveserver.api.dto.archive.group.GroupSummaryRes
 import com.example.notiveserver.api.dto.common.ListRes
+import com.example.notiveserver.api.dto.common.SliceMeta
+import com.example.notiveserver.api.dto.common.SliceRes
 import com.example.notiveserver.application.archive.ArchiveService
 import com.example.notiveserver.application.archive.GroupService
 import com.example.notiveserver.application.archive.TagService
 import com.example.notiveserver.application.archive.dto.BlockInfoDto
+import com.example.notiveserver.application.archive.dto.GroupSummaryDto
 import com.example.notiveserver.application.oembed.OEmbedService
+import com.example.notiveserver.common.policy.PageSize
 import com.example.notiveserver.infrastructure.security.dto.CustomUser
+import jakarta.validation.constraints.Min
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -80,12 +86,33 @@ class ArchiveController(
         )
     }
 
+    @GetMapping("/groups/detail")
+    @PreAuthorize("isAuthenticated()")
+    fun getArchives(
+        @AuthenticationPrincipal user: CustomUser,
+        @Min(0) @RequestParam("page") page: Int,
+    ): ResponseEntity<SliceRes<GroupDetailRes>> {
+        val pages = groupService.listGroupsByUser(user.getId(), page, PageSize.MAIN_NUM_PAGES)
+        val groups = pages.content.map { GroupSummaryDto(it.id!!, it.name) }
+        val groupsDetails = groups.map { groupService.getGroupDetails(it) }
+        val sliceMeta = SliceMeta.of(pages)
+        val content = groupsDetails.map { group ->
+            GroupDetailRes(
+                id = group.id,
+                name = group.name,
+                thumbnails = group.thumbnails.map { it.filePath },
+                totalElements = group.totalElements
+            )
+        }
+        return ResponseEntity.ok(SliceRes(meta = sliceMeta, content = content))
+    }
+
     @GetMapping("/groups")
     @PreAuthorize("isAuthenticated()")
-    fun listGroups(@AuthenticationPrincipal user: CustomUser): ResponseEntity<ListRes<GroupInfo>> {
-        val groups = groupService.listUserGroups(user.getId())
+    fun listGroups(@AuthenticationPrincipal user: CustomUser): ResponseEntity<ListRes<GroupSummaryRes>> {
+        val groups = groupService.listAllGroupsByUser(user.getId())
         return ResponseEntity.ok(ListRes(groups.map {
-            GroupInfo(
+            GroupSummaryRes(
                 id = it.id!!,
                 name = it.name
             )

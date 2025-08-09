@@ -6,4 +6,7 @@ import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
-interface ArchiveRepository : JpaRepository<Archive, UUID>
+interface ArchiveRepository : JpaRepository<Archive, UUID> {
+    fun findTop3ByGroupIdOrderByCreatedAtDesc(groupId: UUID): List<Archive>
+    fun countByGroupId(groupId: UUID): Long
+}

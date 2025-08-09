@@ -32,8 +32,8 @@ class Archive(
     @Column(name = "isPublic", nullable = false)
     var isPublic: Boolean,
 
-//    @Column(name = "repostable", nullable = false)
-//    var repostable: Boolean,
+//    @Column(name = "", nullable = false)
+//    var : Boolean,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = false)

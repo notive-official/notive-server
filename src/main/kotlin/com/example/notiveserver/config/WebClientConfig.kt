@@ -62,7 +62,10 @@ class WebClientConfig {
                 } else {
                     // Referer 헤더 제거
                     val filtered = ClientRequest.from(request)
-                        .headers { headers -> headers.remove(HttpHeaders.REFERER) }
+                        .headers { headers ->
+                            headers.remove(HttpHeaders.REFERER)
+                            headers.remove(HttpHeaders.USER_AGENT)
+                        }
                         .build()
                     next.exchange(filtered)
                 }
