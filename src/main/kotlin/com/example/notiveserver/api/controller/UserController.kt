@@ -3,12 +3,7 @@ package com.example.notiveserver.api.controller
 import com.example.notiveserver.api.dto.user.HeaderRes
 import com.example.notiveserver.api.dto.user.ProfileRes
 import com.example.notiveserver.application.user.UserService
-import com.example.notiveserver.common.enums.ImageCategory
-import com.example.notiveserver.infrastructure.s3.S3StorageClient
-import com.example.notiveserver.infrastructure.security.dto.CustomUser
 import org.springframework.http.ResponseEntity
-import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import java.io.IOException
@@ -18,17 +13,14 @@ import java.io.IOException
 @RequestMapping("/api/user")
 class UserController(
     private val userService: UserService,
-    private val s3StorageClient: S3StorageClient,
 ) {
 
     @GetMapping("/header")
-    @PreAuthorize("isAuthenticated()")
-    fun header(@AuthenticationPrincipal auth: CustomUser): ResponseEntity<HeaderRes> {
-        val userId = auth.getId()
-        val user = userService.findOneByUserId(userId)
+    fun header(): ResponseEntity<HeaderRes> {
+        val user = userService.findCurrentUser()
         return ResponseEntity.ok(
             HeaderRes(
-                userId,
+                user.id,
                 user.nickname,
                 user.profileImage.filePath
             )
@@ -36,10 +28,8 @@ class UserController(
     }
 
     @GetMapping("/profile")
-    @PreAuthorize("isAuthenticated()")
-    fun profile(@AuthenticationPrincipal auth: CustomUser): ResponseEntity<ProfileRes> {
-        val userId = auth.getId()
-        val user = userService.findOneByUserId(userId)
+    fun profile(): ResponseEntity<ProfileRes> {
+        val user = userService.findCurrentUser()
         return ResponseEntity.ok(
             ProfileRes(
                 user.name,
@@ -51,13 +41,18 @@ class UserController(
     }
 
     @PutMapping("/profile/image")
-    @PreAuthorize("isAuthenticated()")
     @Throws(IOException::class)
-    fun coverImageUpload(
-        @AuthenticationPrincipal auth: CustomUser,
+    fun profileImageUpload(
         @RequestParam("file") file: MultipartFile
-    ): String {
-        return s3StorageClient.saveImage(file, ImageCategory.PROFILE)
+    ): ResponseEntity<ProfileRes> {
+        val user = userService.updateUserProfileImage(file)
+        return ResponseEntity.ok(
+            ProfileRes(
+                user.name,
+                user.nickname,
+                user.email,
+                user.profileImage.filePath
+            )
+        )
     }
-
 }

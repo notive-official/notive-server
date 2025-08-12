@@ -1,4 +1,4 @@
-package com.example.notiveserver.api.dto.archive
+package com.example.notiveserver.api.dto.my.archive
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import java.util.*

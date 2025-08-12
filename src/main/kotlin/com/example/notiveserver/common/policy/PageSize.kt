@@ -1,6 +1,7 @@
 package com.example.notiveserver.common.policy
 
 object PageSize {
-    val MAIN_NUM_PAGES = 10
-    val MINIMUM_PAGE = 0
+    val MAIN = 40
+    val SUB = 0
+    val MINIMUM = 0
 }

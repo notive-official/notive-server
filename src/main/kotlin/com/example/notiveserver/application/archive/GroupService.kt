@@ -9,11 +9,11 @@ import com.example.notiveserver.domain.model.archive.Group
 import com.example.notiveserver.domain.repository.ArchiveRepository
 import com.example.notiveserver.domain.repository.GroupRepository
 import com.example.notiveserver.domain.repository.UserRepository
+import com.example.notiveserver.infrastructure.security.SecurityUtils
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.stereotype.Service
-import java.util.*
 
 @Service
 class GroupService(
@@ -21,10 +21,15 @@ class GroupService(
     private val archiveRepository: ArchiveRepository,
     private val userRepository: UserRepository
 ) {
-    fun listAllGroupsByUser(userId: UUID): List<Group> =
-        groupRepository.findAllByUserIdOrderByName(userId)
+    @PreAuthorize("isAuthenticated()")
+    fun listAllGroupsByUser(): List<Group> {
+        val userId = SecurityUtils.currentUserId
+        return groupRepository.findAllByUserIdOrderByName(userId)
+    }
 
-    fun listGroupsByUser(userId: UUID, pageOffset: Int, pageSize: Int): Page<Group> {
+    @PreAuthorize("isAuthenticated()")
+    fun listGroupsByUser(pageOffset: Int, pageSize: Int): Page<Group> {
+        val userId = SecurityUtils.currentUserId
         val pageable = PageRequest.of(pageOffset, pageSize)
         return groupRepository.findByUserIdOrderByName(userId, pageable)
     }
@@ -42,7 +47,10 @@ class GroupService(
         )
     }
 
-    fun createGroup(name: String, userId: UUID): Group {
+
+    @PreAuthorize("isAuthenticated()")
+    fun createGroup(name: String): Group {
+        val userId = SecurityUtils.currentUserId
         val exists = groupRepository.existsByUserIdAndName(userId, name)
         if (exists) {
             throw ArchiveException(ArchiveErrorCode.GROUP_ALREADY_EXISTS)

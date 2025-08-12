@@ -1,4 +1,4 @@
-package com.example.notiveserver.api.dto.archive
+package com.example.notiveserver.api.dto.my.archive
 
 import com.example.notiveserver.api.validator.image.ValidImageFile
 import jakarta.validation.Valid
@@ -28,6 +28,6 @@ data class ArchiveFormReq(
     @field:NotNull
     @field:Size(min = 1, max = 50)
     @field:Valid
-    val blocks: List<BlockForm>,
+    val blocks: List<BlockFormReq>,
 )
 

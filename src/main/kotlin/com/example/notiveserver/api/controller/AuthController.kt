@@ -5,13 +5,10 @@ import com.example.notiveserver.common.exception.AuthException
 import com.example.notiveserver.common.exception.code.AuthErrorCode
 import com.example.notiveserver.common.util.CookieUtil
 import com.example.notiveserver.infrastructure.security.JwtTokenProvider
-import com.example.notiveserver.infrastructure.security.dto.CustomUser
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.*
 
@@ -42,9 +39,8 @@ class AuthController(
         response: HttpServletResponse
     ) {
         val authentication = jwtTokenProvider.getAuthentication(refreshToken)
-        val userId = (authentication.principal as CustomUser).getId()
         if (!jwtTokenProvider.validateToken(refreshToken) ||
-            !tokenService.canReissue(userId, refreshToken)
+            !tokenService.canReissue(refreshToken)
         ) {
             throw AuthException(AuthErrorCode.CANNOT_REISSUE)
         }
@@ -53,9 +49,8 @@ class AuthController(
     }
 
     @PostMapping("/logout")
-    @PreAuthorize("isAuthenticated()")
-    fun logout(@AuthenticationPrincipal user: CustomUser, response: HttpServletResponse) {
-        tokenService.deleteRefreshToken(user.getId())
+    fun logout(response: HttpServletResponse) {
+        tokenService.deleteRefreshToken()
         CookieUtil.clearRefreshTokenCookie(response, cookieDomain)
     }
 }
