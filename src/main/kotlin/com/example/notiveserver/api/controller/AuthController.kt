@@ -1,5 +1,6 @@
 package com.example.notiveserver.api.controller
 
+import com.example.notiveserver.application.auth.AuthService
 import com.example.notiveserver.application.auth.TokenService
 import com.example.notiveserver.common.exception.AuthException
 import com.example.notiveserver.common.exception.code.AuthErrorCode
@@ -9,7 +10,6 @@ import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*
 class AuthController(
     private val jwtTokenProvider: JwtTokenProvider,
     private val tokenService: TokenService,
+    private val authService: AuthService,
 
     @Value("\${authentication.domain.cookie}") private val cookieDomain: String,
     @Value("\${authentication.url.login-redirect}") private val loginRedirectUrl: String,
@@ -25,8 +26,7 @@ class AuthController(
     @GetMapping("/login")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun login(response: HttpServletResponse) {
-        val authentication = SecurityContextHolder.getContext().authentication
-        val refreshToken = jwtTokenProvider.createRefreshToken(authentication)
+        val refreshToken = jwtTokenProvider.createRefreshToken()
 
         CookieUtil.setRefreshTokenCookie(response, refreshToken, cookieDomain)
         response.sendRedirect(loginRedirectUrl)
@@ -38,13 +38,10 @@ class AuthController(
         @CookieValue(name = "refreshToken") refreshToken: String,
         response: HttpServletResponse
     ) {
-        val authentication = jwtTokenProvider.getAuthentication(refreshToken)
-        if (!jwtTokenProvider.validateToken(refreshToken) ||
-            !tokenService.canReissue(refreshToken)
-        ) {
+        if (!jwtTokenProvider.validateToken(refreshToken)) {
             throw AuthException(AuthErrorCode.CANNOT_REISSUE)
         }
-        val accessToken = jwtTokenProvider.createAccessToken(authentication)
+        val accessToken = authService.reissueAccessToken(refreshToken)
         response.setHeader(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
     }
 

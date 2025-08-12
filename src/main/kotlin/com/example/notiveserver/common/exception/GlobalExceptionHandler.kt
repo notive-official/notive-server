@@ -61,6 +61,17 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body)
     }
 
+    @ExceptionHandler(IllegalStateException::class)
+    fun handleIllegalStateException(ex: IllegalStateException): ResponseEntity<ErrorRes> {
+        log.warn("IllegalStateException: {}", ex.message)
+        val body = ErrorRes(
+            status = HttpStatus.BAD_REQUEST.value(),
+            error = HttpStatus.BAD_REQUEST.reasonPhrase,
+            message = ex.message,
+        )
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body)
+    }
+
     @ExceptionHandler(CustomException::class)
     fun handleDomainException(
         ex: CustomException,

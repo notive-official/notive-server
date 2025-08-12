@@ -29,7 +29,7 @@ class Archive(
     @Column(name = "title", nullable = false, length = 64)
     var title: String,
 
-    @Column(name = "isPublic", nullable = false)
+    @Column(name = "is_public", nullable = false)
     var isPublic: Boolean,
 
 //    @Column(name = "", nullable = false)

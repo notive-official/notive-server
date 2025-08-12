@@ -8,9 +8,11 @@ import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 import java.time.Duration
 import java.util.*
@@ -47,11 +49,11 @@ class JwtTokenProvider(
         return createToken(user, accessExpireMillis)
     }
 
-    fun createRefreshToken(authentication: Authentication): String {
-        val user = (authentication.principal as CustomUser)
+    @PreAuthorize("isAuthenticated()")
+    fun createRefreshToken(): String {
+        val user = (SecurityContextHolder.getContext().authentication.principal as CustomUser)
         val refreshToken = createToken(user, refreshExpireMillis)
         tokenService.saveRefreshToken(
-            user.getId(),
             refreshToken,
             Duration.ofMillis(refreshExpireMillis)
         )

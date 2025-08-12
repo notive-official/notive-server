@@ -1,6 +1,5 @@
 package com.example.notiveserver.application.auth
 
-import com.example.notiveserver.domain.repository.UserRepository
 import com.example.notiveserver.infrastructure.security.JwtTokenProvider
 import com.example.notiveserver.infrastructure.security.dto.CustomUser
 import org.springframework.http.HttpStatus
@@ -9,7 +8,6 @@ import org.springframework.web.server.ResponseStatusException
 
 @Service
 class AuthService(
-    private val userRepository: UserRepository,
     private val jwtTokenProvider: JwtTokenProvider,
     private val tokenService: TokenService
 ) {

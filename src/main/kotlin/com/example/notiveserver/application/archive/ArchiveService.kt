@@ -102,7 +102,26 @@ class ArchiveService(
     fun listArchivesByUser(pageOffset: Int, pageSize: Int): Page<ArchiveSummaryDto> {
         val userId = SecurityUtils.currentUserId
         val pageable = PageRequest.of(pageOffset, pageSize)
-        val pages = archiveRepository.findByWriterIdOrderByCreatedAt(userId, pageable)
+        val pages = archiveRepository.findByWriterIdOrderByCreatedAtDesc(userId, pageable)
+        return pages.map { archive ->
+            val writer = archive.writer
+            ArchiveSummaryDto(
+                id = requireNotNull(archive.id),
+                title = archive.title,
+                thumbnailPath = ArchiveThumbnailDto.of(archive.thumbnailPath),
+                writer = UserSummaryDto(
+                    id = requireNotNull(writer.id),
+                    nickname = writer.name,
+                    profileImage = ProfileImageDto.of(writer.profileImage)
+                )
+            )
+        }
+    }
+
+    @Transactional
+    fun listPublicArchives(pageOffset: Int, pageSize: Int): Page<ArchiveSummaryDto> {
+        val pageable = PageRequest.of(pageOffset, pageSize)
+        val pages = archiveRepository.findByIsPublicTrueOrderByCreatedAtDesc(pageable)
         return pages.map { archive ->
             val writer = archive.writer
             ArchiveSummaryDto(

@@ -25,11 +25,8 @@ class TokenService(
             .set(userId.refreshTokenKey, token, ttl)
     }
 
-    @PreAuthorize("isAuthenticated()")
-    fun canReissue(oldRefreshToken: String): Boolean {
-        val userId = SecurityUtils.currentUserId
-        return oldRefreshToken == stringRedisTemplate.opsForValue().get(userId.refreshTokenKey)
-    }
+    fun canReissue(userId: UUID, oldRefreshToken: String): Boolean =
+        oldRefreshToken == stringRedisTemplate.opsForValue().get(userId.refreshTokenKey)
 
     @PreAuthorize("isAuthenticated()")
     fun deleteRefreshToken(): String? {

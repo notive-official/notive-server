@@ -11,5 +11,6 @@ import java.util.*
 interface ArchiveRepository : JpaRepository<Archive, UUID> {
     fun findTop3ByGroupIdOrderByCreatedAtDesc(groupId: UUID): List<Archive>
     fun countByGroupId(groupId: UUID): Long
-    fun findByWriterIdOrderByCreatedAt(userId: UUID, pageable: Pageable): Page<Archive>
+    fun findByWriterIdOrderByCreatedAtDesc(userId: UUID, pageable: Pageable): Page<Archive>
+    fun findByIsPublicTrueOrderByCreatedAtDesc(pageable: Pageable): Page<Archive>
 }
