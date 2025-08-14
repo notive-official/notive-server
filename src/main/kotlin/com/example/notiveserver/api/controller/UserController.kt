@@ -45,7 +45,8 @@ class UserController(
     fun profileImageUpload(
         @RequestParam("file") file: MultipartFile
     ): ResponseEntity<ProfileRes> {
-        val user = userService.updateUserProfileImage(file)
+        userService.deleteUserProfileImage()
+        val user = userService.uploadUserProfileImage(file)
         return ResponseEntity.ok(
             ProfileRes(
                 user.name,

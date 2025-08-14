@@ -1,4 +1,4 @@
-package com.example.notiveserver.api.dto.my.group
+package com.example.notiveserver.api.dto.group
 
 import java.util.*
 

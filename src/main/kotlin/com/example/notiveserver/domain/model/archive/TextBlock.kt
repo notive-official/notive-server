@@ -14,5 +14,5 @@ class TextBlock(
     archive: Archive,
 
     @Column(name = "content", nullable = true, columnDefinition = "TEXT")
-    val payload: String
+    val content: String
 ) : ArchiveBlock(id = id, position = position, type = type, archive = archive)

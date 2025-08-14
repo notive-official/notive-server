@@ -10,4 +10,6 @@ interface TagRepository : JpaRepository<Tag, UUID> {
     fun findBySlug(slug: String): Tag?
 
     fun findDistinctByArchivesWriterIdOrderBySlugAsc(writerId: UUID): List<Tag>
+
+    fun findAllByArchivesIdOrderBySlugAsc(archiveId: UUID): List<Tag>
 }

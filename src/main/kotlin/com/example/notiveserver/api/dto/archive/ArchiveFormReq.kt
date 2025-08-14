@@ -1,6 +1,7 @@
-package com.example.notiveserver.api.dto.my.archive
+package com.example.notiveserver.api.dto.archive
 
-import com.example.notiveserver.api.validator.image.ValidImageFile
+import com.example.notiveserver.common.enums.ArchiveType
+import com.example.notiveserver.common.validation.annotation.ValidImageFile
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
@@ -24,6 +25,12 @@ data class ArchiveFormReq(
 
     @field:NotNull
     val isPublic: Boolean,
+
+    @field:NotNull
+    val type: ArchiveType,
+
+    @field:NotNull
+    val isReplicable: Boolean,
 
     @field:NotNull
     @field:Size(min = 1, max = 50)

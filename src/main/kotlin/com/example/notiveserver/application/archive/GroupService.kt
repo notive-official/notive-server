@@ -28,13 +28,16 @@ class GroupService(
     }
 
     @PreAuthorize("isAuthenticated()")
-    fun listGroupsByUser(pageOffset: Int, pageSize: Int): Page<Group> {
+    fun listGroupsByUser(pageOffset: Int, pageSize: Int): Page<GroupSummaryDto> {
         val userId = SecurityUtils.currentUserId
         val pageable = PageRequest.of(pageOffset, pageSize)
-        return groupRepository.findByUserIdOrderByName(userId, pageable)
+        val pages = groupRepository.findByUserIdOrderByName(userId, pageable)
+        return pages.map {
+            GroupSummaryDto(it.id!!, it.name)
+        }
     }
 
-    @PreAuthorize("hasRole('ADMIN') or @ownershipSecurity.isGroupOwner(#group.id, principal.id)")
+    @PreAuthorize("hasRole('ADMIN') or @ownershipSecurity.isGroupOwner(#group.id)")
     fun getGroupDetails(group: GroupSummaryDto): GroupDetailDto {
         val top3Thumbnails =
             archiveRepository.findTop3ByGroupIdOrderByCreatedAtDesc(group.id)

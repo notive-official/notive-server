@@ -5,7 +5,6 @@ import com.example.notiveserver.application.user.dto.UserDto
 import com.example.notiveserver.common.enums.ImageCategory
 import com.example.notiveserver.common.exception.UserException
 import com.example.notiveserver.common.exception.code.UserErrorCode
-import com.example.notiveserver.domain.model.user.User
 import com.example.notiveserver.domain.repository.UserRepository
 import com.example.notiveserver.infrastructure.s3.S3StorageClient
 import com.example.notiveserver.infrastructure.security.SecurityUtils
@@ -35,13 +34,13 @@ class UserService(
     }
 
     @PreAuthorize("isAuthenticated()")
-    fun updateUserProfileImage(file: MultipartFile): UserDto {
+    fun uploadUserProfileImage(file: MultipartFile): UserDto {
         val profileImagePath = s3StorageClient.saveImage(file, ImageCategory.PROFILE)
         val userId = SecurityUtils.currentUserId
-        val user = userRepository.findByIdOrNull(userId)?.let { user: User ->
-            user.profileImage = profileImagePath
-            userRepository.save(user)
-        } ?: throw UserException(UserErrorCode.USER_NOT_FOUND)
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw UserException(UserErrorCode.USER_NOT_FOUND)
+        user.profileImage = profileImagePath
+        userRepository.save(user)
         return UserDto(
             id = user.id!!,
             name = user.name,
@@ -49,5 +48,15 @@ class UserService(
             email = user.email,
             profileImage = ProfileImageDto.of(user.profileImage)
         )
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    fun deleteUserProfileImage() {
+        val userId = SecurityUtils.currentUserId
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw UserException(UserErrorCode.USER_NOT_FOUND)
+        user.profileImage?.let { filePath ->
+            s3StorageClient.deleteImage(filePath)
+        }
     }
 }

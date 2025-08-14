@@ -1,12 +1,12 @@
 package com.example.notiveserver.api.controller
 
+import com.example.notiveserver.api.dto.archive.ArchiveDetailRes
+import com.example.notiveserver.api.dto.archive.ArchiveFormReq
+import com.example.notiveserver.api.dto.archive.ArchiveRes
+import com.example.notiveserver.api.dto.archive.ArchiveSummaryRes
 import com.example.notiveserver.api.dto.common.ListRes
 import com.example.notiveserver.api.dto.common.SliceMeta
 import com.example.notiveserver.api.dto.common.SliceRes
-import com.example.notiveserver.api.dto.my.archive.ArchiveFormReq
-import com.example.notiveserver.api.dto.my.archive.ArchiveRes
-import com.example.notiveserver.api.dto.my.archive.ArchiveSummaryRes
-import com.example.notiveserver.api.dto.my.archive.WriterSummaryRes
 import com.example.notiveserver.application.archive.ArchiveService
 import com.example.notiveserver.application.archive.TagService
 import com.example.notiveserver.application.archive.dto.BlockInfoDto
@@ -32,47 +32,57 @@ class ArchiveController(
         @Validated @ModelAttribute form: ArchiveFormReq
     ): ResponseEntity<ArchiveRes> {
         val blocks: List<BlockInfoDto> = form.blocks.map { block ->
-            val payload = archiveService.validateAndGetPayload(block)
-            BlockInfoDto(position = block.position, type = block.type, payload = payload)
-
+            BlockInfoDto(
+                position = block.position,
+                type = block.type,
+                payload = block.getPayload()
+            )
         }
+        val summary = archiveService.generateArchiveSummary(blocks)
         val archive =
             archiveService.saveArchive(
                 thumbnailImage = form.thumbnailImage,
                 title = form.title,
                 isPublic = form.isPublic,
+                type = form.type,
+                isReplicable = form.isReplicable,
+                summary = summary,
                 groupId = UUID.fromString(form.groupId),
                 tags = form.tags,
-                blocks = blocks
             )
+        archiveService.saveArchiveBlocks(blocks, archiveId = archive.id!!)
         return ResponseEntity.ok(
-            ArchiveRes(
-                archiveId = archive.id!!,
-            )
+            ArchiveRes(id = archive.id!!)
         )
     }
 
     @GetMapping("/notes")
-    fun getUserArchives(
+    fun listUserArchives(
         @Min(0) @RequestParam("page") page: Int,
     ): ResponseEntity<SliceRes<ArchiveSummaryRes>> {
-        val pages = archiveService.listArchivesByUser(page, PageSize.MAIN)
+        val pages = archiveService.listArchivesByUser(page, PageSize.SUB)
         val sliceMeta = SliceMeta.of(pages)
         val content = pages.content.map { archive ->
             val writer = archive.writer
-            ArchiveSummaryRes(
-                id = archive.id,
-                thumbnailPath = archive.thumbnailPath.filePath,
-                title = archive.title,
-                writer = WriterSummaryRes(
-                    id = writer.id,
-                    nickname = writer.nickname,
-                    profileImagePath = writer.profileImage.filePath
-                )
-
-            )
+            val tags = tagService.listTagByArchive(archiveId = archive.id)
+            ArchiveSummaryRes.of(archive = archive, tags = tags, writer = writer)
         }
         return ResponseEntity.ok(SliceRes(meta = sliceMeta, content = content))
+    }
+
+    @GetMapping("/notes/{archiveId}")
+    fun getArchive(
+        @PathVariable archiveId: String,
+    ): ResponseEntity<ArchiveDetailRes> {
+        val archive = archiveService.getArchive(archiveId = UUID.fromString(archiveId))
+        val tags = tagService.listTagByArchive(archiveId = archive.meta.id)
+        return ResponseEntity.ok(
+            ArchiveDetailRes.of(
+                meta = archive.meta,
+                tags = tags,
+                blocks = archive.blocks
+            )
+        )
     }
 
     @GetMapping("/tags")

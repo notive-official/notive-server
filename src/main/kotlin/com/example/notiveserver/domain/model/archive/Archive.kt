@@ -1,5 +1,6 @@
 package com.example.notiveserver.domain.model.archive
 
+import com.example.notiveserver.common.enums.ArchiveType
 import com.example.notiveserver.domain.model.Timestamped
 import com.example.notiveserver.domain.model.user.User
 import com.fasterxml.jackson.annotation.JsonManagedReference
@@ -32,8 +33,15 @@ class Archive(
     @Column(name = "is_public", nullable = false)
     var isPublic: Boolean,
 
-//    @Column(name = "", nullable = false)
-//    var : Boolean,
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false, length = 10)
+    open val type: ArchiveType,
+
+    @Column(name = "is_replicable", nullable = false)
+    var isReplicable: Boolean,
+
+    @Column(name = "summary", nullable = false, length = 100)
+    val summary: String,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = false)
@@ -59,6 +67,9 @@ class Archive(
             title: String,
             tags: List<Tag>,
             isPublic: Boolean,
+            type: ArchiveType,
+            isReplicable: Boolean,
+            summary: String,
             group: Group,
             writer: User
         ): Archive {
@@ -66,6 +77,9 @@ class Archive(
                 thumbnailPath = thumbnailPath,
                 title = title,
                 isPublic = isPublic,
+                type = type,
+                isReplicable = isReplicable,
+                summary = summary,
                 group = group,
                 writer = writer,
                 tags = tags.toMutableSet()

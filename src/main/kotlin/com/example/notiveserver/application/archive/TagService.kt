@@ -7,6 +7,7 @@ import com.example.notiveserver.domain.repository.UserRepository
 import com.example.notiveserver.infrastructure.security.SecurityUtils
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class TagService(
@@ -17,6 +18,10 @@ class TagService(
     fun listTagsOwnedByUser(): List<Tag> {
         val userId = SecurityUtils.currentUserId
         return tagRepository.findDistinctByArchivesWriterIdOrderBySlugAsc(userId)
+    }
+
+    fun listTagByArchive(archiveId: UUID): List<String> {
+        return tagRepository.findAllByArchivesIdOrderBySlugAsc(archiveId).map { it.slug }
     }
 
     @PreAuthorize("isAuthenticated()")

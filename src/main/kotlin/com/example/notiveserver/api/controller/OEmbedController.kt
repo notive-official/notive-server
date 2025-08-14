@@ -1,6 +1,6 @@
 package com.example.notiveserver.api.controller
 
-import com.example.notiveserver.api.dto.my.archive.OEmbedRes
+import com.example.notiveserver.api.dto.archive.OEmbedRes
 import com.example.notiveserver.application.oembed.OEmbedService
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping

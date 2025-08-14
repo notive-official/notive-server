@@ -11,7 +11,7 @@ enum class BlockType(
             position = pos,
             type = PARAGRAPH,
             archive = arc,
-            payload = payload
+            content = payload
         )
     }),
     H1({ pos, arc, payload ->
@@ -19,7 +19,7 @@ enum class BlockType(
             position = pos,
             type = H1,
             archive = arc,
-            payload = payload
+            content = payload
         )
     }),
     H2({ pos, arc, payload ->
@@ -27,7 +27,7 @@ enum class BlockType(
             position = pos,
             type = H2,
             archive = arc,
-            payload = payload
+            content = payload
         )
     }),
     H3({ pos, arc, payload ->
@@ -35,7 +35,7 @@ enum class BlockType(
             position = pos,
             type = H3,
             archive = arc,
-            payload = payload
+            content = payload
         )
     }),
 
@@ -44,7 +44,7 @@ enum class BlockType(
             position = pos,
             type = IMAGE,
             archive = arc,
-            payload = payload
+            path = payload
         )
     }),
     LINK({ pos, arc, payload ->
@@ -52,7 +52,7 @@ enum class BlockType(
             position = pos,
             type = LINK,
             archive = arc,
-            payload = payload
+            url = payload
         )
     });
 }

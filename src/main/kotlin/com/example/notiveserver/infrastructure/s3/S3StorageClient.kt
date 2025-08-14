@@ -19,16 +19,21 @@ class S3StorageClient(
     @Throws(IOException::class)
     fun saveImage(multipartFile: MultipartFile, imageCategory: ImageCategory): String {
         val originalFilename = multipartFile.originalFilename
+        val extension = originalFilename?.substringAfterLast('.', "")
 
         val metadata = ObjectMetadata()
         metadata.contentLength = multipartFile.size
         metadata.contentType = multipartFile.contentType
 
         val directoryPath = imageCategory.getDirectoryPath()
-        val fileName = "${UUID.randomUUID()}-$originalFilename"
+        val fileName = "${UUID.randomUUID()}.${extension}"
         val filePath = "$directoryPath/$fileName".trim('/')
 
         amazonS3.putObject(bucket, filePath, multipartFile.inputStream, metadata)
         return filePath
+    }
+
+    fun deleteImage(filePath: String) {
+        amazonS3.deleteObject(bucket, filePath)
     }
 }

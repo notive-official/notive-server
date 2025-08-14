@@ -11,7 +11,6 @@ object SecurityUtils {
         get() {
             val authentication = SecurityContextHolder.getContext().authentication
             check(!(authentication == null || authentication.principal !is CustomUser)) { "인증된 사용자가 없습니다." }
-
             return authentication.principal as CustomUser
         }
 

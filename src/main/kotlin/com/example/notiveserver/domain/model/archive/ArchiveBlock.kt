@@ -5,6 +5,7 @@ import com.example.notiveserver.domain.model.Timestamped
 import jakarta.persistence.*
 import org.hibernate.annotations.Check
 import org.hibernate.annotations.DiscriminatorFormula
+import org.hibernate.annotations.Formula
 import java.time.LocalDateTime
 
 @Entity
@@ -50,6 +51,9 @@ class ArchiveBlock(
     """
     )
     val updatedAt: LocalDateTime? = null,
+
+    @Formula("coalesce(path, url, content)")
+    val payload: String? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     open val archive: Archive

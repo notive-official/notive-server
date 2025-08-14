@@ -1,5 +1,6 @@
-package com.example.notiveserver.api.validator.image
+package com.example.notiveserver.common.validation.validator
 
+import com.example.notiveserver.common.validation.annotation.ValidImageFile
 import jakarta.validation.ConstraintValidator
 import jakarta.validation.ConstraintValidatorContext
 import org.springframework.web.multipart.MultipartFile

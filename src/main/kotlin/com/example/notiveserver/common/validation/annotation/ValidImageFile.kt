@@ -1,5 +1,6 @@
-package com.example.notiveserver.api.validator.image
+package com.example.notiveserver.common.validation.annotation
 
+import com.example.notiveserver.common.validation.validator.ImageFileValidator
 import jakarta.validation.Constraint
 import jakarta.validation.Payload
 import kotlin.reflect.KClass

@@ -12,19 +12,17 @@ class OwnershipSecurity(
 ) {
     /**
      * @param archiveId 조회할 문서 UUID
-     * @param userId 현재 인증된 사용자의 UUID
      */
-    fun isArchiveOwner(archiveId: UUID, userId: UUID): Boolean =
+    fun isArchiveOwner(archiveId: UUID): Boolean =
         archiveRepository.findById(archiveId)
-            .map { it.writer.id == userId }
+            .map { it.writer.id == SecurityUtils.currentUserId }
             .orElse(false)
 
     /**
      * @param groupId 조회할 그룹 UUID
-     * @param userId 현재 인증된 사용자의 UUID
      */
-    fun isGroupOwner(groupId: UUID, userId: UUID): Boolean =
+    fun isGroupOwner(groupId: UUID): Boolean =
         groupRepository.findById(groupId)
-            .map { it.user.id == userId }
+            .map { it.user.id == SecurityUtils.currentUserId }
             .orElse(false)
 }
