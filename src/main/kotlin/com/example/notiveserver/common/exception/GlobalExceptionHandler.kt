@@ -8,6 +8,7 @@ import org.springframework.security.authorization.AuthorizationDeniedException
 import org.springframework.web.bind.MissingRequestCookieException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.multipart.MultipartException
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 
 @RestControllerAdvice
@@ -37,6 +38,17 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
             message = ex.message,
         )
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body)
+    }
+
+    @ExceptionHandler(MultipartException::class)
+    fun handleMultipartExceptionException(ex: MultipartException): ResponseEntity<ErrorRes> {
+        log.warn("MultipartException: {}", ex.message)
+        val body = ErrorRes(
+            status = HttpStatus.BAD_REQUEST.value(),
+            error = HttpStatus.BAD_REQUEST.reasonPhrase,
+            message = ex.message,
+        )
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body)
     }
 
     @ExceptionHandler(MissingRequestCookieException::class)

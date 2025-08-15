@@ -4,5 +4,5 @@ data class ProfileRes(
     val name: String,
     val nickname: String,
     val email: String,
-    val profileImageUrl: String
+    val profileImagePath: String
 )

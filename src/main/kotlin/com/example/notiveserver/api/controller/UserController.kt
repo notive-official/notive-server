@@ -20,7 +20,6 @@ class UserController(
         val user = userService.findCurrentUser()
         return ResponseEntity.ok(
             HeaderRes(
-                user.id,
                 user.nickname,
                 user.profileImage.filePath
             )
