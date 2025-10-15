@@ -1,0 +1,67 @@
+name: Build & Deploy to EC2
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      JAR_NAME: ${{ vars.JAR_NAME }}
+      EC2_APP_DIR: ${{ vars.EC2_APP_DIR }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Corretto JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: corretto
+          java-version: '17'
+
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Build (prod profile)
+        run: |
+          ./gradlew clean build -Dspring.profiles.active=prod -x test
+
+      - name: Prepare SSH key & known_hosts
+        run: |
+          echo "${{ secrets.SSH_KEY }}" > key.pem
+          chmod 600 key.pem
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Copy JAR to EC2
+        run: |
+          if [ -z "${JAR_NAME}" ]; then
+            JAR_PATH=$(ls -t build/libs/*.jar | head -n1)
+          else
+            JAR_PATH="build/libs/${JAR_NAME}"
+          fi
+
+          echo "Uploading $JAR_PATH to $EC2_APP_DIR"
+          scp -i key.pem "$JAR_PATH" \
+            "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:${EC2_APP_DIR}"
+
+      - name: Restart service on EC2
+        run: |
+          ssh -i key.pem "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" << 'EOF'
+            set -e
+            sudo systemctl daemon-reload || true
+            sudo systemctl restart notive
+            sudo systemctl status notive --no-pager -l | head -n 30 || true
+          EOF
+
+      - name: Clean up key
+        if: always()
+        run: |
+          shred -u key.pem || rm -f key.pem
