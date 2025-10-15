@@ -3,6 +3,8 @@ name: Build & Deploy to EC2
 on:
   push:
     branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
   workflow_dispatch:
 
 concurrency:
@@ -35,13 +37,19 @@ jobs:
           ./gradlew clean build -Dspring.profiles.active=prod -x test
 
       - name: Prepare SSH key & known_hosts
+        shell: bash
         run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
+          set -euo pipefail
           
-          echo "${{ secrets.SSH_KEY }}" > key.pem
+          SSH_DIR="$RUNNER_TEMP/ssh"
+          mkdir -p "$SSH_DIR"
+          chmod 700 "$SSH_DIR"
+          
+          printf '%s' "${{ secrets.SSH_KEY }}" > "$SSH_DIR/key.pem"
           chmod 600 key.pem
-          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" > "$SSH_DIR/known_hosts"
+          
+          echo "SSH_DIR=$SSH_DIR" >> "$GITHUB_ENV"
 
       - name: Copy JAR to EC2
         run: |
@@ -52,12 +60,12 @@ jobs:
           fi
 
           echo "Uploading $JAR_PATH to $EC2_APP_DIR"
-          scp -i key.pem "$JAR_PATH" \
+          scp -i "$SSH_DIR/key.pem" "$JAR_PATH" \
             "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:${EC2_APP_DIR}"
 
       - name: Restart service on EC2
         run: |
-          ssh -i key.pem "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" << 'EOF'
+          ssh -i "$SSH_DIR/key.pem" "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" << 'EOF'
             set -e
             sudo systemctl daemon-reload || true
             sudo systemctl restart notive
