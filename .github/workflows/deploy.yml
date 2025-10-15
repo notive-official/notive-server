@@ -38,8 +38,21 @@ jobs:
 
       - name: Prepare SSH key & known_hosts
         shell: bash
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          HOST: ${{ secrets.EC2_HOST }}
         run: |
           set -euo pipefail
+          set -x
+          
+          if [ -z "${SSH_KEY:-}" ]; then
+            echo "::warning:: SSH_KEY secret is empty (fork PR or not configured). Skipping deploy."
+            exit 0
+          fi
+          if [ -z "${HOST:-}" ]; then
+            echo "::warning:: EC2_HOST secret is empty. Skipping deploy."
+            exit 0
+          fi
           
           SSH_DIR="$RUNNER_TEMP/ssh"
           mkdir -p "$SSH_DIR"
