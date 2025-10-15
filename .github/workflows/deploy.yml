@@ -46,7 +46,7 @@ jobs:
           chmod 700 "$SSH_DIR"
           
           printf '%s' "${{ secrets.SSH_KEY }}" > "$SSH_DIR/key.pem"
-          chmod 600 key.pem
+          chmod 600 "$SSH_DIR/key.pem"
           ssh-keyscan -H "${{ secrets.EC2_HOST }}" > "$SSH_DIR/known_hosts"
           
           echo "SSH_DIR=$SSH_DIR" >> "$GITHUB_ENV"
@@ -75,4 +75,4 @@ jobs:
       - name: Clean up key
         if: always()
         run: |
-          shred -u key.pem || rm -f key.pem
+          rm -f "$SSH_DIR/key.pem" "$SSH_DIR/known_hosts" || true
