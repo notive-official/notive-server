@@ -5,8 +5,8 @@ import com.example.notiveserver.domain.repository.GroupRepository
 import org.springframework.stereotype.Component
 import java.util.*
 
-@Component("ownershipSecurity")
-class OwnershipSecurity(
+@Component("accessManager")
+class AccessManager(
     private val archiveRepository: ArchiveRepository,
     private val groupRepository: GroupRepository,
 ) {
@@ -16,6 +16,14 @@ class OwnershipSecurity(
     fun isArchiveOwner(archiveId: UUID): Boolean =
         archiveRepository.findById(archiveId)
             .map { it.writer.id == SecurityUtils.currentUserId }
+            .orElse(false)
+
+    /**
+     * @param archiveId 조회할 문서 UUID
+     */
+    fun canReadArchive(archiveId: UUID): Boolean =
+        archiveRepository.findById(archiveId)
+            .map { it.isPublic || it.writer.id == SecurityUtils.currentUserId }
             .orElse(false)
 
     /**

@@ -12,7 +12,7 @@ import java.util.*
 
 @Entity
 @Table(name = "archives")
-@SQLDelete(sql = "UPDATE archive SET deleted_at = CURRENT_TIMESTAMP where id = ?")
+@SQLDelete(sql = "UPDATE archives SET deleted_at = CURRENT_TIMESTAMP where id = ?")
 @SQLRestriction("deleted_at is NULL")
 class Archive(
 
@@ -35,10 +35,10 @@ class Archive(
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, length = 10)
-    open val type: ArchiveType,
+    var type: ArchiveType,
 
-    @Column(name = "is_replicable", nullable = false)
-    var isReplicable: Boolean,
+    @Column(name = "is_duplicable", nullable = false)
+    var isDuplicable: Boolean,
 
     @Column(name = "summary", nullable = false, length = 100)
     val summary: String,
@@ -68,7 +68,7 @@ class Archive(
             tags: List<Tag>,
             isPublic: Boolean,
             type: ArchiveType,
-            isReplicable: Boolean,
+            isDuplicable: Boolean,
             summary: String,
             group: Group,
             writer: User
@@ -78,7 +78,7 @@ class Archive(
                 title = title,
                 isPublic = isPublic,
                 type = type,
-                isReplicable = isReplicable,
+                isDuplicable = isDuplicable,
                 summary = summary,
                 group = group,
                 writer = writer,

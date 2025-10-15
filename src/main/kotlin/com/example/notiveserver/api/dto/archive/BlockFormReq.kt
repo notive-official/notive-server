@@ -9,7 +9,6 @@ import com.example.notiveserver.common.validation.group.LinkGroup
 import com.example.notiveserver.common.validation.group.TextGroup
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
-import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import org.hibernate.validator.group.GroupSequenceProvider
 import org.springframework.web.multipart.MultipartFile
@@ -29,7 +28,7 @@ data class BlockFormReq @JsonCreator constructor(
     @JsonProperty(value = "image", access = JsonProperty.Access.WRITE_ONLY)
     private val image: MultipartFile? = null,
 
-    @field:NotBlank(groups = [TextGroup::class, LinkGroup::class])
+    @field:NotNull(groups = [TextGroup::class, LinkGroup::class])
     @JsonProperty(value = "content", access = JsonProperty.Access.WRITE_ONLY)
     private val content: String? = null
 ) {

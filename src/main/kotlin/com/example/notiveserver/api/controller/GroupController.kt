@@ -1,23 +1,29 @@
 package com.example.notiveserver.api.controller
 
+import com.example.notiveserver.api.dto.archive.ArchiveSummaryRes
 import com.example.notiveserver.api.dto.common.ListRes
 import com.example.notiveserver.api.dto.common.SliceMeta
 import com.example.notiveserver.api.dto.common.SliceRes
 import com.example.notiveserver.api.dto.group.GroupDetailRes
 import com.example.notiveserver.api.dto.group.GroupReq
 import com.example.notiveserver.api.dto.group.GroupSummaryRes
+import com.example.notiveserver.application.archive.ArchiveService
 import com.example.notiveserver.application.archive.GroupService
+import com.example.notiveserver.application.archive.TagService
 import com.example.notiveserver.common.policy.PageSize
 import jakarta.validation.constraints.Min
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
+import java.util.*
 
 @RestController
 @RequestMapping("/api/group")
 class GroupController(
     private val groupService: GroupService,
+    private val archiveService: ArchiveService,
+    private val tagService: TagService,
 ) {
 
     @GetMapping("/metas")
@@ -42,6 +48,21 @@ class GroupController(
                 name = it.name
             )
         }))
+    }
+
+    @GetMapping("/{groupId}/archives")
+    fun listUserArchivesByGroup(
+        @Min(0) @RequestParam("page") page: Int,
+        @PathVariable groupId: UUID,
+    ): ResponseEntity<SliceRes<ArchiveSummaryRes>> {
+        val pages = archiveService.listArchivesByGroup(page, PageSize.SUB, groupId = groupId)
+        val sliceMeta = SliceMeta.of(pages)
+        val content = pages.content.map { archive ->
+            val writer = archive.writer
+            val tags = tagService.listTagByArchive(archiveId = archive.id)
+            ArchiveSummaryRes.of(archive = archive, tags = tags, writer = writer)
+        }
+        return ResponseEntity.ok(SliceRes(meta = sliceMeta, content = content))
     }
 
     @PostMapping

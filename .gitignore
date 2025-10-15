@@ -39,5 +39,9 @@ out/
 ### Kotlin ###
 .kotlin
 
-*.yml
+
+application.yml
+application-*.yml
+!deploy.yml
 *.p12
+*.sh

@@ -13,7 +13,7 @@ data class ArchiveSummaryDto(
     val thumbnailPath: ArchiveThumbnailDto,
     val isPublic: Boolean,
     val type: ArchiveType,
-    val isReplicable: Boolean,
+    val isDuplicable: Boolean,
     val summary: String,
     val writer: UserSummaryDto
 ) {
@@ -25,11 +25,11 @@ data class ArchiveSummaryDto(
                 thumbnailPath = ArchiveThumbnailDto.of(archive.thumbnailPath),
                 type = archive.type,
                 isPublic = archive.isPublic,
-                isReplicable = archive.isReplicable,
+                isDuplicable = archive.isDuplicable,
                 summary = archive.summary,
                 writer = UserSummaryDto(
                     id = requireNotNull(writer.id),
-                    nickname = writer.name,
+                    nickname = writer.nickname,
                     profileImage = ProfileImageDto.of(writer.profileImage)
                 )
             )
