@@ -1,14 +1,9 @@
 package com.example.notiveserver.application.archive
 
-import com.example.notiveserver.application.common.HtmlSanitizer
-import com.example.notiveserver.application.common.UrlInspector
 import org.springframework.stereotype.Service
 
 @Service
-class TextInspectionService(
-    private val sanitizer: HtmlSanitizer,
-    private val urlInspector: UrlInspector,
-) {
+class TextInspectionService {
 //    fun inspectAndNormalize(blocks: List<BlockContentDto>): List<BlockContentDto> =
 //        blocks.mapIndexed { idx, b ->
 //            val text = (b.data["text"] as? String).orEmpty()

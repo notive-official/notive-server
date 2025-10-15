@@ -11,7 +11,7 @@ data class ArchiveMetaRes(
     val title: String,
     val isPublic: Boolean,
     val type: ArchiveType,
-    val isReplicable: Boolean,
+    val isDuplicable: Boolean,
     val writer: WriterSummaryRes
 ) {
     companion object {
@@ -25,7 +25,7 @@ data class ArchiveMetaRes(
                 thumbnailPath = archive.thumbnailPath.filePath,
                 isPublic = archive.isPublic,
                 type = archive.type,
-                isReplicable = archive.isReplicable,
+                isDuplicable = archive.isDuplicable,
                 writer = WriterSummaryRes(
                     id = writer.id,
                     nickname = writer.nickname,

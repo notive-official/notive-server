@@ -11,7 +11,7 @@ data class ArchiveSummaryRes(
     val tags: List<String>,
     val isPublic: Boolean,
     val type: ArchiveType,
-    val isReplicable: Boolean,
+    val isDuplicable: Boolean,
     val title: String,
     val summary: String,
     val writer: WriterSummaryRes
@@ -29,7 +29,7 @@ data class ArchiveSummaryRes(
                 title = archive.title,
                 isPublic = archive.isPublic,
                 type = archive.type,
-                isReplicable = archive.isReplicable,
+                isDuplicable = archive.isDuplicable,
                 summary = archive.summary,
                 writer = WriterSummaryRes(
                     id = writer.id,

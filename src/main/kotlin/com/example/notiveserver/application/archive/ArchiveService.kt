@@ -20,7 +20,6 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.stereotype.Service
-import org.springframework.web.multipart.MultipartFile
 import java.util.*
 
 @Service
@@ -36,26 +35,23 @@ class ArchiveService(
     @Transactional
     @PreAuthorize("isAuthenticated()")
     fun saveArchive(
-        thumbnailImage: MultipartFile?,
+        thumbnailPath: String?,
         title: String,
         isPublic: Boolean,
         type: ArchiveType,
-        isReplicable: Boolean,
+        isDuplicable: Boolean,
         summary: String,
         groupId: UUID,
         tags: List<String>,
     ): Archive {
         val userId = SecurityUtils.currentUserId
-        val thumbnailPath = thumbnailImage?.let { file ->
-            s3StorageClient.saveImage(file, ImageCategory.ARCHIVE_THUMBNAIL)
-        }
         return archiveRepository.save(
             Archive.create(
                 thumbnailPath = thumbnailPath,
                 title = title,
                 isPublic = isPublic,
                 type = type,
-                isReplicable = isReplicable,
+                isDuplicable = isDuplicable,
                 summary = summary,
                 tags = tagService.getOrSave(tags),
                 group = groupRepository.getReferenceById(groupId),
@@ -76,7 +72,7 @@ class ArchiveService(
     }
 
     @Transactional
-    @PreAuthorize("@ownershipSecurity.isArchiveOwner(#archiveId)")
+    @PreAuthorize("isAuthenticated() and @accessManager.isArchiveOwner(#archiveId)")
     fun saveArchiveBlocks(blocks: List<BlockInfoDto>, archiveId: UUID): List<ArchiveBlock> {
         val archive = archiveRepository.getReferenceById(archiveId)
         val archiveBlocks = blocks.map { block ->
@@ -96,10 +92,41 @@ class ArchiveService(
 
     @Transactional
     @PreAuthorize("isAuthenticated()")
-    fun listArchivesByUser(pageOffset: Int, pageSize: Int): Page<ArchiveSummaryDto> {
+    fun listArchivesByUser(
+        pageOffset: Int,
+        pageSize: Int,
+        archiveType: ArchiveType?
+    ): Page<ArchiveSummaryDto> {
         val userId = SecurityUtils.currentUserId
         val pageable = PageRequest.of(pageOffset, pageSize)
-        val pages = archiveRepository.findByWriterIdOrderByCreatedAtDesc(userId, pageable)
+        val pages = if (archiveType != null) {
+            archiveRepository.findByWriterIdAndTypeOrderByCreatedAtDesc(
+                userId,
+                archiveType,
+                pageable
+            )
+        } else {
+            archiveRepository.findByWriterIdOrderByCreatedAtDesc(userId, pageable)
+        }
+
+        return pages.map { archive ->
+            val writer = archive.writer
+            ArchiveSummaryDto.of(archive, writer)
+        }
+    }
+
+    @Transactional
+    @PreAuthorize("isAuthenticated() and @accessManager.isGroupOwner(#groupId)")
+    fun listArchivesByGroup(
+        pageOffset: Int,
+        pageSize: Int,
+        groupId: UUID
+    ): Page<ArchiveSummaryDto> {
+        val pageable = PageRequest.of(pageOffset, pageSize)
+        val pages = archiveRepository.findByGroupIdOrderByCreatedAtDesc(
+            groupId,
+            pageable
+        )
         return pages.map { archive ->
             val writer = archive.writer
             ArchiveSummaryDto.of(archive, writer)
@@ -118,10 +145,19 @@ class ArchiveService(
     }
 
     @Transactional
-    @PreAuthorize("@ownershipSecurity.isArchiveOwner(#archiveId)")
+    @PreAuthorize("@accessManager.canReadArchive(#archiveId)")
     fun getArchive(archiveId: UUID): ArchiveDetailDto {
         val archive = archiveRepository.findByIdOrNull(archiveId)!!
         val blocks = archiveBlockRepository.findAllByArchiveId(archiveId)
         return ArchiveDetailDto.of(archive, archive.writer, blocks)
+    }
+
+    fun canEditArchive(archiveId: UUID): Boolean {
+        try {
+            val archive = archiveRepository.findByIdOrNull(archiveId)
+            return archive!!.writer.id == SecurityUtils.currentUserId
+        } catch (e: Exception) {
+            return false
+        }
     }
 }

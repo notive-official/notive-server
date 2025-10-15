@@ -27,6 +27,7 @@ class OEmbedController(
                 thumbnailUrl = it.thumbnailUrl,
                 thumbnailWidth = it.thumbnailWidth,
                 thumbnailHeight = it.thumbnailHeight,
+                html = it.html
             )
         }
     }

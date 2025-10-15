@@ -4,6 +4,7 @@ plugins {
     id("org.springframework.boot") version "3.4.5"
     id("io.spring.dependency-management") version "1.1.7"
     kotlin("plugin.jpa") version "1.9.25"
+    kotlin("kapt") version "1.4.31"
 }
 
 group = "com.example"
@@ -31,14 +32,16 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
+    // flyway
+    implementation("org.flywaydb:flyway-core:11.12.0")
+    implementation("org.flywaydb:flyway-mysql:11.12.0")
+
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("com.mysql:mysql-connector-j")
 
     // OEmbed
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.jsoup:jsoup:1.16.1")
-    implementation("commons-validator:commons-validator:1.7")
-
 
     // JWT
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")

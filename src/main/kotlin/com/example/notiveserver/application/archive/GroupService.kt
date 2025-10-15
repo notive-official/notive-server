@@ -37,7 +37,7 @@ class GroupService(
         }
     }
 
-    @PreAuthorize("hasRole('ADMIN') or @ownershipSecurity.isGroupOwner(#group.id)")
+    @PreAuthorize("hasRole('ADMIN') or @accessManager.isGroupOwner(#group.id)")
     fun getGroupDetails(group: GroupSummaryDto): GroupDetailDto {
         val top3Thumbnails =
             archiveRepository.findTop3ByGroupIdOrderByCreatedAtDesc(group.id)
