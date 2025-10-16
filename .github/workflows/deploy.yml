@@ -5,6 +5,10 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: read
+
 concurrency:
   group: deploy-prod
   cancel-in-progress: true
@@ -34,37 +38,15 @@ jobs:
         run: |
           ./gradlew clean build -Dspring.profiles.active=prod -x test
 
-      - name: Prepare SSH key & known_hosts
-        run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          
-          echo "${{ secrets.SSH_KEY }}" > key.pem
-          chmod 600 key.pem
-          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{secrets.AWS_REGION}}
+          role-to-assume: ${{secrets.IAM_ROLE}}
 
-      - name: Copy JAR to EC2
+      - name: Upload JAR to S3 (triggers Lambda)
         run: |
-          if [ -z "${JAR_NAME}" ]; then
-            JAR_PATH=$(ls -t build/libs/*.jar | head -n1)
-          else
-            JAR_PATH="build/libs/${JAR_NAME}"
-          fi
-
-          echo "Uploading $JAR_PATH to $EC2_APP_DIR"
-          scp -i key.pem "$JAR_PATH" \
-            "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:${EC2_APP_DIR}"
-
-      - name: Restart service on EC2
-        run: |
-          ssh -i key.pem "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" << 'EOF'
-            set -e
-            sudo systemctl daemon-reload || true
-            sudo systemctl restart notive
-            sudo systemctl status notive --no-pager -l | head -n 30 || true
-          EOF
-
-      - name: Clean up key
-        if: always()
-        run: |
-          shred -u key.pem || rm -f key.pem
+          set -euo pipefail
+          JAR=$(ls -t build/libs/*.jar | head -n1)
+          TS=$(date +%Y%m%d-%H%M%S)
+          aws s3 cp "$JAR" "s3://notive-deploy-artifacts/notive/prod/${TS}-app.jar"
