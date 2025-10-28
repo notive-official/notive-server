@@ -21,7 +21,7 @@ class UserController(
         return ResponseEntity.ok(
             HeaderRes(
                 user.nickname,
-                user.profileImage.filePath
+                user.profileImagePath
             )
         )
     }
@@ -34,7 +34,7 @@ class UserController(
                 user.name,
                 user.nickname,
                 user.email,
-                user.profileImage.filePath
+                user.profileImagePath
             )
         )
     }
@@ -51,7 +51,7 @@ class UserController(
                 user.name,
                 user.nickname,
                 user.email,
-                user.profileImage.filePath
+                user.profileImagePath
             )
         )
     }

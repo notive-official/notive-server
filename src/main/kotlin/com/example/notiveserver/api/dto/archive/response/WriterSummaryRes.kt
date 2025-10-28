@@ -1,9 +1,9 @@
-package com.example.notiveserver.api.dto.archive
+package com.example.notiveserver.api.dto.archive.response
 
 import java.util.*
 
 data class WriterSummaryRes(
     val id: UUID,
     val nickname: String,
-    val profileImagePath: String
+    val profileImagePath: String?
 )

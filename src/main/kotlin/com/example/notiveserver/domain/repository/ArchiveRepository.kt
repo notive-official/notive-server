@@ -25,4 +25,6 @@ interface ArchiveRepository : JpaRepository<Archive, UUID> {
     ): Page<Archive>
 
     fun findByIsPublicTrueOrderByCreatedAtDesc(pageable: Pageable): Page<Archive>
+
+    fun deleteAllByGroupId(groupId: UUID)
 }

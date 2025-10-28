@@ -1,12 +1,17 @@
 package com.example.notiveserver.common.validation.group
 
-import com.example.notiveserver.api.dto.archive.BlockFormReq
 import com.example.notiveserver.common.enums.BlockType
 import org.hibernate.validator.spi.group.DefaultGroupSequenceProvider
 
-class BlockFormReqGroupSeqProvider : DefaultGroupSequenceProvider<BlockFormReq> {
-    override fun getValidationGroups(value: BlockFormReq?): MutableList<Class<*>> {
-        val groups = mutableListOf<Class<*>>(BlockFormReq::class.java) // 항상 자신(=Default)
+interface HasBlockType {
+    val type: BlockType?
+}
+
+abstract class BaseBlockGroupProvider<T : HasBlockType>(
+    private val root: Class<T>
+) : DefaultGroupSequenceProvider<T> {
+    override fun getValidationGroups(value: T?): MutableList<Class<*>> {
+        val groups = mutableListOf<Class<*>>(root)
         when (value?.type) {
             BlockType.PARAGRAPH -> groups += TextGroup::class.java
             BlockType.H1 -> groups += TextGroup::class.java

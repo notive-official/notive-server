@@ -5,5 +5,5 @@ import java.util.*
 data class UserSummaryDto(
     val id: UUID,
     val nickname: String,
-    val profileImage: ProfileImageDto,
+    val profileImagePath: String?,
 )

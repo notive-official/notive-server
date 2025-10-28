@@ -8,4 +8,5 @@ import java.util.*
 @Repository
 interface ArchiveBlockRepository : JpaRepository<ArchiveBlock, Long> {
     fun findAllByArchiveId(archiveId: UUID): List<ArchiveBlock>
+    fun deleteByArchiveId(archiveId: UUID)
 }

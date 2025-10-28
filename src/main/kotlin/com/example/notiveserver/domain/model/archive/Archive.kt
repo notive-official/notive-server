@@ -41,7 +41,7 @@ class Archive(
     var isDuplicable: Boolean,
 
     @Column(name = "summary", nullable = false, length = 100)
-    val summary: String,
+    var summary: String,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = false)
@@ -65,7 +65,6 @@ class Archive(
         fun create(
             thumbnailPath: String?,
             title: String,
-            tags: List<Tag>,
             isPublic: Boolean,
             type: ArchiveType,
             isDuplicable: Boolean,
@@ -82,7 +81,6 @@ class Archive(
                 summary = summary,
                 group = group,
                 writer = writer,
-                tags = tags.toMutableSet()
             )
         }
     }
