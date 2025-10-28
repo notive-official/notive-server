@@ -1,6 +1,6 @@
 package com.example.notiveserver.api.controller
 
-import com.example.notiveserver.api.dto.archive.ArchiveSummaryRes
+import com.example.notiveserver.api.dto.archive.response.ArchiveSummaryRes
 import com.example.notiveserver.api.dto.common.ListRes
 import com.example.notiveserver.api.dto.common.SliceMeta
 import com.example.notiveserver.api.dto.common.SliceRes
@@ -27,11 +27,11 @@ class GroupController(
 ) {
 
     @GetMapping("/metas")
-    fun getGroupDetails(
+    fun listDetailedGroups(
         @Min(0) @RequestParam("page") page: Int,
     ): ResponseEntity<SliceRes<GroupDetailRes>> {
         val pages = groupService.listGroupsByUser(page, PageSize.MAIN)
-        val groupsDetails = pages.content.map { groupService.getGroupDetails(it) }
+        val groupsDetails = pages.content.map { groupService.getDetailedGroup(it) }
         val sliceMeta = SliceMeta.of(pages)
         val content = groupsDetails.map { group ->
             GroupDetailRes.of(group)
@@ -39,12 +39,20 @@ class GroupController(
         return ResponseEntity.ok(SliceRes(meta = sliceMeta, content = content))
     }
 
+    @GetMapping("/metas/{groupId}")
+    fun getGroupMeta(
+        @PathVariable groupId: UUID,
+    ): ResponseEntity<GroupSummaryRes> {
+        val group = groupService.getGroup(groupId)
+        return ResponseEntity.ok(GroupSummaryRes(id = group.id, name = group.name))
+    }
+
     @GetMapping("/names")
     fun listGroups(): ResponseEntity<ListRes<GroupSummaryRes>> {
         val groups = groupService.listAllGroupsByUser()
         return ResponseEntity.ok(ListRes(groups.map {
             GroupSummaryRes(
-                id = it.id!!,
+                id = it.id,
                 name = it.name
             )
         }))
@@ -59,7 +67,7 @@ class GroupController(
         val sliceMeta = SliceMeta.of(pages)
         val content = pages.content.map { archive ->
             val writer = archive.writer
-            val tags = tagService.listTagByArchive(archiveId = archive.id)
+            val tags = tagService.listTagsByArchive(archiveId = archive.id)
             ArchiveSummaryRes.of(archive = archive, tags = tags, writer = writer)
         }
         return ResponseEntity.ok(SliceRes(meta = sliceMeta, content = content))
@@ -71,5 +79,22 @@ class GroupController(
         @Validated @RequestBody body: GroupReq
     ) {
         groupService.createGroup(body.groupName)
+    }
+
+    @PutMapping("/{groupId}")
+    @ResponseStatus(HttpStatus.OK)
+    fun updateGroup(
+        @Validated @RequestBody body: GroupReq,
+        @PathVariable groupId: UUID,
+    ) {
+        groupService.updateGroup(groupId, body.groupName)
+    }
+
+    @DeleteMapping("/{groupId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun deleteGroup(
+        @PathVariable groupId: UUID,
+    ) {
+        groupService.deleteGroupWithArchives(groupId)
     }
 }

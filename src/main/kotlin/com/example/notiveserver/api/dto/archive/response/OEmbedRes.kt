@@ -1,4 +1,4 @@
-package com.example.notiveserver.api.dto.archive
+package com.example.notiveserver.api.dto.archive.response
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 

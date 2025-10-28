@@ -15,4 +15,4 @@ class ImageBlock(
 
     @Column(name = "path", nullable = true, length = 255)
     val path: String
-) : ArchiveBlock(id = id, position = position, type = type, archive = archive)
+) : ArchiveBlock(id = id, position = position, type = type, archive = archive, payload = path)

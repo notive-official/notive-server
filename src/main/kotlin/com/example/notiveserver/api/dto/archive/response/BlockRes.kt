@@ -1,4 +1,4 @@
-package com.example.notiveserver.api.dto.archive
+package com.example.notiveserver.api.dto.archive.response
 
 import com.example.notiveserver.application.archive.dto.ArchiveBlockDto
 import com.example.notiveserver.common.enums.BlockType
