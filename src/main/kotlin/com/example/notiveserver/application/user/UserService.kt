@@ -1,6 +1,5 @@
 package com.example.notiveserver.application.user
 
-import com.example.notiveserver.application.user.dto.ProfileImageDto
 import com.example.notiveserver.application.user.dto.UserDto
 import com.example.notiveserver.common.enums.ImageCategory
 import com.example.notiveserver.common.exception.UserException
@@ -29,7 +28,7 @@ class UserService(
             name = user.name,
             nickname = user.nickname,
             email = user.email,
-            profileImage = ProfileImageDto.of(user.profileImage)
+            profileImagePath = user.profileImage
         )
     }
 
@@ -46,7 +45,7 @@ class UserService(
             name = user.name,
             nickname = user.nickname,
             email = user.email,
-            profileImage = ProfileImageDto.of(user.profileImage)
+            profileImagePath = user.profileImage
         )
     }
 

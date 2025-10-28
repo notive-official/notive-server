@@ -1,5 +1,8 @@
 package com.example.notiveserver.infrastructure.security
 
+import com.example.notiveserver.common.exception.ArchiveException
+import com.example.notiveserver.common.exception.code.ArchiveErrorCode
+import com.example.notiveserver.domain.repository.ArchiveBlockRepository
 import com.example.notiveserver.domain.repository.ArchiveRepository
 import com.example.notiveserver.domain.repository.GroupRepository
 import org.springframework.stereotype.Component
@@ -8,15 +11,35 @@ import java.util.*
 @Component("accessManager")
 class AccessManager(
     private val archiveRepository: ArchiveRepository,
+    private val archiveBlockRepository: ArchiveBlockRepository,
     private val groupRepository: GroupRepository,
 ) {
     /**
      * @param archiveId 조회할 문서 UUID
      */
-    fun isArchiveOwner(archiveId: UUID): Boolean =
-        archiveRepository.findById(archiveId)
-            .map { it.writer.id == SecurityUtils.currentUserId }
-            .orElse(false)
+    fun isArchiveOwner(archiveId: UUID): Boolean {
+        val accessible = archiveRepository.findById(archiveId)
+        if (accessible.isEmpty) {
+            throw ArchiveException(ArchiveErrorCode.ARCHIVE_NOT_FOUND)
+        }
+        if (accessible.get().writer.id != SecurityUtils.currentUserId) {
+            throw ArchiveException(ArchiveErrorCode.NOT_ARCHIVE_OWNER)
+        }
+        return true
+    }
+
+    /**
+     * @param archiveId 조회할 문서 UUID
+     */
+    fun isBelongsToArchive(archiveId: UUID, blockIds: List<Long>): Boolean {
+        val accessible = archiveRepository.findById(archiveId)
+        if (accessible.isEmpty) {
+            throw ArchiveException(ArchiveErrorCode.ARCHIVE_NOT_FOUND)
+        }
+        val existBlockIds = archiveBlockRepository.findAllByArchiveId(archiveId).map { it.id }
+        val notValidIds = blockIds - existBlockIds.toSet()
+        return notValidIds.isEmpty()
+    }
 
     /**
      * @param archiveId 조회할 문서 UUID
@@ -29,8 +52,14 @@ class AccessManager(
     /**
      * @param groupId 조회할 그룹 UUID
      */
-    fun isGroupOwner(groupId: UUID): Boolean =
-        groupRepository.findById(groupId)
-            .map { it.user.id == SecurityUtils.currentUserId }
-            .orElse(false)
+    fun isGroupOwner(groupId: UUID): Boolean {
+        val accessible = groupRepository.findById(groupId)
+        if (accessible.isEmpty) {
+            throw ArchiveException(ArchiveErrorCode.GROUP_NOT_FOUND)
+        }
+        if (accessible.get().user.id != SecurityUtils.currentUserId) {
+            throw ArchiveException(ArchiveErrorCode.NOT_GROUP_OWNER)
+        }
+        return true
+    }
 }

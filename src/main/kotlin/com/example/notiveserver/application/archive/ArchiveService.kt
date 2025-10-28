@@ -7,7 +7,6 @@ import com.example.notiveserver.application.archive.dto.PayloadDto
 import com.example.notiveserver.common.enums.ArchiveType
 import com.example.notiveserver.common.enums.ImageCategory
 import com.example.notiveserver.domain.model.archive.Archive
-import com.example.notiveserver.domain.model.archive.ArchiveBlock
 import com.example.notiveserver.domain.repository.ArchiveBlockRepository
 import com.example.notiveserver.domain.repository.ArchiveRepository
 import com.example.notiveserver.domain.repository.GroupRepository
@@ -20,6 +19,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
 import java.util.*
 
 @Service
@@ -27,13 +27,41 @@ class ArchiveService(
     private val archiveRepository: ArchiveRepository,
     private val archiveBlockRepository: ArchiveBlockRepository,
     private val groupRepository: GroupRepository,
-    private val s3StorageClient: S3StorageClient,
     private val userRepository: UserRepository,
-    private val tagService: TagService,
+    private val s3StorageClient: S3StorageClient,
 ) {
 
     @Transactional
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated() and @accessManager.isGroupOwner(#groupId)")
+    fun saveArchive(
+        thumbnailImage: MultipartFile?,
+        title: String,
+        isPublic: Boolean,
+        type: ArchiveType,
+        isDuplicable: Boolean,
+        summary: String,
+        groupId: UUID,
+    ): Archive {
+        val userId = SecurityUtils.currentUserId
+        val thumbnailPath = thumbnailImage?.let { file ->
+            s3StorageClient.saveImage(file, ImageCategory.ARCHIVE_THUMBNAIL)
+        }
+        return archiveRepository.save(
+            Archive.create(
+                thumbnailPath = thumbnailPath,
+                title = title,
+                isPublic = isPublic,
+                type = type,
+                isDuplicable = isDuplicable,
+                summary = summary,
+                group = groupRepository.getReferenceById(groupId),
+                writer = userRepository.getReferenceById(userId)
+            )
+        )
+    }
+
+    @Transactional
+    @PreAuthorize("isAuthenticated() and @accessManager.isGroupOwner(#groupId)")
     fun saveArchive(
         thumbnailPath: String?,
         title: String,
@@ -42,7 +70,6 @@ class ArchiveService(
         isDuplicable: Boolean,
         summary: String,
         groupId: UUID,
-        tags: List<String>,
     ): Archive {
         val userId = SecurityUtils.currentUserId
         return archiveRepository.save(
@@ -53,11 +80,59 @@ class ArchiveService(
                 type = type,
                 isDuplicable = isDuplicable,
                 summary = summary,
-                tags = tagService.getOrSave(tags),
                 group = groupRepository.getReferenceById(groupId),
                 writer = userRepository.getReferenceById(userId)
             )
         )
+    }
+
+    @Transactional
+    @PreAuthorize("isAuthenticated() and @accessManager.isArchiveOwner(#archiveId)")
+    fun updateArchive(
+        archiveId: UUID,
+        thumbnailImage: MultipartFile?,
+        title: String?,
+        isPublic: Boolean?,
+        type: ArchiveType?,
+        isDuplicable: Boolean?,
+        summary: String?,
+        groupId: UUID?,
+    ): Archive {
+        val archive = archiveRepository.getReferenceById(archiveId)
+        thumbnailImage?.let { file ->
+            archive.thumbnailPath?.let { s3StorageClient.deleteImage(it) }
+            archive.thumbnailPath = s3StorageClient.saveImage(file, ImageCategory.ARCHIVE_THUMBNAIL)
+        }
+        title?.let { archive.title = it }
+        isPublic?.let { archive.isPublic = it }
+        type?.let { archive.type = it }
+        isDuplicable?.let { archive.isDuplicable = it }
+        summary?.let { archive.summary = it }
+        groupId?.let { archive.group = groupRepository.getReferenceById(it) }
+        return archive
+    }
+
+    @Transactional
+    @PreAuthorize("isAuthenticated() and @accessManager.isArchiveOwner(#archiveId)")
+    fun updateArchive(
+        archiveId: UUID,
+        thumbnailPath: String?,
+        title: String?,
+        isPublic: Boolean?,
+        type: ArchiveType?,
+        isDuplicable: Boolean?,
+        summary: String?,
+        groupId: UUID?,
+    ): Archive {
+        val archive = archiveRepository.getReferenceById(archiveId)
+        thumbnailPath?.let { archive.thumbnailPath = it }
+        title?.let { archive.title = it }
+        isPublic?.let { archive.isPublic = it }
+        type?.let { archive.type = it }
+        isDuplicable?.let { archive.isDuplicable = it }
+        summary?.let { archive.summary = it }
+        groupId?.let { archive.group = groupRepository.getReferenceById(it) }
+        return archive
     }
 
     fun generateArchiveSummary(blockInfos: List<BlockInfoDto>): String {
@@ -69,25 +144,6 @@ class ArchiveService(
                 }
             }
             .joinToString(" ").take(95)
-    }
-
-    @Transactional
-    @PreAuthorize("isAuthenticated() and @accessManager.isArchiveOwner(#archiveId)")
-    fun saveArchiveBlocks(blocks: List<BlockInfoDto>, archiveId: UUID): List<ArchiveBlock> {
-        val archive = archiveRepository.getReferenceById(archiveId)
-        val archiveBlocks = blocks.map { block ->
-            when (block.payload) {
-                is PayloadDto.File -> {
-                    val filePath =
-                        s3StorageClient.saveImage(block.payload.file, ImageCategory.ARCHIVE_BLOCK)
-                    block.toArchiveBlock(filePath, archive)
-                }
-
-                is PayloadDto.Url -> block.toArchiveBlock(block.payload.url, archive)
-                is PayloadDto.Text -> block.toArchiveBlock(block.payload.text, archive)
-            }
-        }
-        return archiveBlockRepository.saveAll(archiveBlocks)
     }
 
     @Transactional
@@ -149,10 +205,17 @@ class ArchiveService(
     fun getArchive(archiveId: UUID): ArchiveDetailDto {
         val archive = archiveRepository.findByIdOrNull(archiveId)!!
         val blocks = archiveBlockRepository.findAllByArchiveId(archiveId)
-        return ArchiveDetailDto.of(archive, archive.writer, blocks)
+        return ArchiveDetailDto.of(archive, archive.writer, archive.group, blocks)
     }
 
-    fun canEditArchive(archiveId: UUID): Boolean {
+    @Transactional
+    @PreAuthorize("@accessManager.isArchiveOwner(#archiveId)")
+    fun deleteArchive(archiveId: UUID) {
+        archiveBlockRepository.deleteByArchiveId(archiveId)
+        archiveRepository.deleteById(archiveId)
+    }
+
+    fun isArchiveOwner(archiveId: UUID): Boolean {
         try {
             val archive = archiveRepository.findByIdOrNull(archiveId)
             return archive!!.writer.id == SecurityUtils.currentUserId

@@ -9,8 +9,8 @@ import org.hibernate.annotations.UuidGenerator
 import java.util.*
 
 @Entity
-@Table(name = "packages", uniqueConstraints = [UniqueConstraint(columnNames = ["name", "user_id"])])
-@SQLDelete(sql = "UPDATE group SET deleted_at = CURRENT_TIMESTAMP where id = ?")
+@Table(name = "packages")
+@SQLDelete(sql = "UPDATE packages SET deleted_at = CURRENT_TIMESTAMP where id = ?")
 @SQLRestriction("deleted_at is NULL")
 class Group(
     @Id

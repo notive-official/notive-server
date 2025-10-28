@@ -3,6 +3,8 @@ package com.example.notiveserver.domain.model.archive
 import com.example.notiveserver.domain.model.Timestamped
 import com.example.notiveserver.domain.model.user.User
 import jakarta.persistence.*
+import org.hibernate.annotations.UpdateTimestamp
+import java.time.LocalDateTime
 
 
 @Entity
@@ -22,14 +24,22 @@ class Bookmark(
     var archive: Archive,
 
     @Column(name = "is_marked", nullable = false)
-    var isMarked: Boolean
+    var isMarked: Boolean,
 
-) : Timestamped() {
+    @UpdateTimestamp
+    @Column(
+        name = "updated_at",
+        nullable = false,
+        columnDefinition = "DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)"
+    )
+    var updatedAt: LocalDateTime? = null,
+
+    ) : Timestamped() {
     companion object {
         fun create(isMarked: Boolean, user: User, archive: Archive): Bookmark = Bookmark(
             isMarked = isMarked,
             user = user,
-            archive = archive
+            archive = archive,
         )
     }
 }

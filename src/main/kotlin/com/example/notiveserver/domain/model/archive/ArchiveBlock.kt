@@ -6,6 +6,7 @@ import jakarta.persistence.*
 import org.hibernate.annotations.Check
 import org.hibernate.annotations.DiscriminatorFormula
 import org.hibernate.annotations.Formula
+import org.hibernate.annotations.UpdateTimestamp
 import java.time.LocalDateTime
 
 @Entity
@@ -32,28 +33,22 @@ class ArchiveBlock(
     open val id: Long? = null,
 
     @Column(name = "position", nullable = false)
-    open val position: Int,
+    open var position: Int,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, length = 15)
-    open val type: BlockType,
+    open var type: BlockType,
 
+    @UpdateTimestamp
     @Column(
         name = "updated_at",
         nullable = false,
-        updatable = false,
-        insertable = false,
-        columnDefinition = """
-        DATETIME(3)
-        NOT NULL
-        DEFAULT CURRENT_TIMESTAMP(3)
-        ON UPDATE CURRENT_TIMESTAMP(3)
-    """
+        columnDefinition = "DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)"
     )
-    val updatedAt: LocalDateTime? = null,
+    var updatedAt: LocalDateTime? = null,
 
     @Formula("coalesce(path, url, content)")
-    val payload: String? = null,
+    var payload: String,
 
     @ManyToOne(fetch = FetchType.LAZY)
     open val archive: Archive

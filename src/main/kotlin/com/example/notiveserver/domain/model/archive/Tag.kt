@@ -1,8 +1,6 @@
 package com.example.notiveserver.domain.model.archive
 
-import com.example.notiveserver.common.util.SlugUtil
 import com.example.notiveserver.domain.model.Timestamped
-import com.example.notiveserver.domain.repository.TagRepository
 import com.fasterxml.jackson.annotation.JsonBackReference
 import jakarta.persistence.*
 import org.hibernate.annotations.UuidGenerator
@@ -25,16 +23,4 @@ class Tag(
     @ManyToMany(mappedBy = "tags")
     @JsonBackReference
     val archives: MutableSet<Archive> = mutableSetOf()
-) : Timestamped() {
-
-    companion object {
-        fun getOrSave(rawTags: List<String>, tagRepo: TagRepository): List<Tag> {
-            return rawTags
-                .mapNotNull { it.trim().takeIf(String::isNotBlank) }
-                .map { tag ->
-                    val slug = SlugUtil.slugify(tag)
-                    tagRepo.findBySlug(slug) ?: tagRepo.save(Tag(slug = slug))
-                }
-        }
-    }
-}
+) : Timestamped()

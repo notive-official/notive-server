@@ -7,5 +7,5 @@ data class UserDto(
     val name: String,
     val nickname: String,
     val email: String,
-    val profileImage: ProfileImageDto,
+    val profileImagePath: String?,
 )

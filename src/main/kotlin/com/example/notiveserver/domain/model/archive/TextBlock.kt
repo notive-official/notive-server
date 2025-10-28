@@ -15,4 +15,4 @@ class TextBlock(
 
     @Column(name = "content", nullable = true, columnDefinition = "TEXT")
     val content: String
-) : ArchiveBlock(id = id, position = position, type = type, archive = archive)
+) : ArchiveBlock(id = id, position = position, type = type, archive = archive, payload = content)

@@ -1,6 +1,6 @@
 package com.example.notiveserver.api.controller
 
-import com.example.notiveserver.api.dto.archive.ArchiveSummaryRes
+import com.example.notiveserver.api.dto.archive.response.ArchiveSummaryRes
 import com.example.notiveserver.api.dto.common.SliceMeta
 import com.example.notiveserver.api.dto.common.SliceRes
 import com.example.notiveserver.application.archive.ArchiveService
@@ -28,7 +28,7 @@ class SearchController(
         val sliceMeta = SliceMeta.of(pages)
         val content = pages.content.map { archive ->
             val writer = archive.writer
-            val tags = tagService.listTagByArchive(archiveId = archive.id)
+            val tags = tagService.listTagsByArchive(archiveId = archive.id)
             ArchiveSummaryRes.of(archive = archive, tags = tags, writer = writer)
         }
         return ResponseEntity.ok(SliceRes(meta = sliceMeta, content = content))

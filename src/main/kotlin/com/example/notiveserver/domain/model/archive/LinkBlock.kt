@@ -15,4 +15,4 @@ class LinkBlock(
 
     @Column(name = "url", nullable = true, length = 255)
     val url: String
-) : ArchiveBlock(id = id, position = position, type = type, archive = archive)
+) : ArchiveBlock(id = id, position = position, type = type, archive = archive, payload = url)
