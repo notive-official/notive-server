@@ -36,7 +36,8 @@ jobs:
 
       - name: Build (prod profile)
         run: |
-          ./gradlew clean build -Dspring.profiles.active=prod -x test
+          ./gradlew clean bootJar -Dspring.profiles.active=prod -x test
+          ls -lh build/libs
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -47,6 +48,6 @@ jobs:
       - name: Upload JAR to S3 (triggers Lambda)
         run: |
           set -euo pipefail
-          JAR=$(ls -t build/libs/*.jar | head -n1)
+          JAR=$(ls -t build/libs/*.jar | grep -v plain | head -n1)
           TS=$(date +%Y%m%d-%H%M%S)
           aws s3 cp "$JAR" "s3://notive-deploy-artifacts/notive/prod/${TS}-app.jar"
