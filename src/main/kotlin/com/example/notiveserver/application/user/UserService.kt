@@ -6,7 +6,8 @@ import com.example.notiveserver.common.exception.UserException
 import com.example.notiveserver.common.exception.code.UserErrorCode
 import com.example.notiveserver.domain.repository.UserRepository
 import com.example.notiveserver.infrastructure.s3.S3StorageClient
-import com.example.notiveserver.infrastructure.security.SecurityUtils
+import com.example.notiveserver.infrastructure.security.SecurityCurrentUserProvider
+import jakarta.transaction.Transactional
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.stereotype.Service
@@ -15,12 +16,13 @@ import org.springframework.web.multipart.MultipartFile
 @Service
 class UserService(
     private val userRepository: UserRepository,
-    private val s3StorageClient: S3StorageClient
+    private val s3StorageClient: S3StorageClient,
+    private val currentUser: SecurityCurrentUserProvider
 ) {
 
     @PreAuthorize("isAuthenticated()")
     fun findCurrentUser(): UserDto {
-        val userId = SecurityUtils.currentUserId
+        val userId = currentUser.id()
         val user = userRepository.findByIdOrNull(userId)
             ?: throw UserException(UserErrorCode.USER_NOT_FOUND)
         return UserDto(
@@ -35,7 +37,7 @@ class UserService(
     @PreAuthorize("isAuthenticated()")
     fun uploadUserProfileImage(file: MultipartFile): UserDto {
         val profileImagePath = s3StorageClient.saveImage(file, ImageCategory.PROFILE)
-        val userId = SecurityUtils.currentUserId
+        val userId = currentUser.id()
         val user = userRepository.findByIdOrNull(userId)
             ?: throw UserException(UserErrorCode.USER_NOT_FOUND)
         user.profileImage = profileImagePath
@@ -50,8 +52,8 @@ class UserService(
     }
 
     @PreAuthorize("isAuthenticated()")
-    fun deleteUserProfileImage() {
-        val userId = SecurityUtils.currentUserId
+    fun deleteUserProfileImage(): String {
+        val userId = currentUser.id()
         val user = userRepository.findByIdOrNull(userId)
             ?: throw UserException(UserErrorCode.USER_NOT_FOUND)
         user.profileImage?.let { filePath ->

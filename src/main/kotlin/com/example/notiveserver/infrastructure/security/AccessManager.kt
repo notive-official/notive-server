@@ -13,6 +13,7 @@ class AccessManager(
     private val archiveRepository: ArchiveRepository,
     private val archiveBlockRepository: ArchiveBlockRepository,
     private val groupRepository: GroupRepository,
+    private val currentUser: SecurityCurrentUserProvider
 ) {
     /**
      * @param archiveId 조회할 문서 UUID
@@ -22,7 +23,7 @@ class AccessManager(
         if (accessible.isEmpty) {
             throw ArchiveException(ArchiveErrorCode.ARCHIVE_NOT_FOUND)
         }
-        if (accessible.get().writer.id != SecurityUtils.currentUserId) {
+        if (accessible.get().writer.id != currentUser.id()) {
             throw ArchiveException(ArchiveErrorCode.NOT_ARCHIVE_OWNER)
         }
         return true
@@ -46,7 +47,7 @@ class AccessManager(
      */
     fun canReadArchive(archiveId: UUID): Boolean =
         archiveRepository.findById(archiveId)
-            .map { it.isPublic || it.writer.id == SecurityUtils.currentUserId }
+            .map { it.isPublic || it.writer.id == currentUser.id() }
             .orElse(false)
 
     /**
@@ -57,7 +58,7 @@ class AccessManager(
         if (accessible.isEmpty) {
             throw ArchiveException(ArchiveErrorCode.GROUP_NOT_FOUND)
         }
-        if (accessible.get().user.id != SecurityUtils.currentUserId) {
+        if (accessible.get().user.id != currentUser.id()) {
             throw ArchiveException(ArchiveErrorCode.NOT_GROUP_OWNER)
         }
         return true

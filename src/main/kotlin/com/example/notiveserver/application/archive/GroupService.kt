@@ -8,7 +8,7 @@ import com.example.notiveserver.domain.model.archive.Group
 import com.example.notiveserver.domain.repository.ArchiveRepository
 import com.example.notiveserver.domain.repository.GroupRepository
 import com.example.notiveserver.domain.repository.UserRepository
-import com.example.notiveserver.infrastructure.security.SecurityUtils
+import com.example.notiveserver.infrastructure.security.SecurityCurrentUserProvider
 import jakarta.transaction.Transactional
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -20,11 +20,12 @@ import java.util.*
 class GroupService(
     private val groupRepository: GroupRepository,
     private val archiveRepository: ArchiveRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val currentUser: SecurityCurrentUserProvider
 ) {
     @PreAuthorize("isAuthenticated()")
     fun listAllGroupsByUser(): List<GroupSummaryDto> {
-        val userId = SecurityUtils.currentUserId
+        val userId = currentUser.id()
         return groupRepository.findAllByUserIdOrderByName(userId)
             .map { GroupSummaryDto(id = it.id!!, name = it.name) }
     }
@@ -38,7 +39,7 @@ class GroupService(
 
     @PreAuthorize("isAuthenticated()")
     fun listGroupsByUser(pageOffset: Int, pageSize: Int): Page<GroupSummaryDto> {
-        val userId = SecurityUtils.currentUserId
+        val userId = currentUser.id()
         val pageable = PageRequest.of(pageOffset, pageSize)
         val pages = groupRepository.findByUserIdOrderByName(userId, pageable)
         return pages.map {
@@ -62,7 +63,7 @@ class GroupService(
 
     @PreAuthorize("isAuthenticated()")
     fun createGroup(name: String): Group {
-        val userId = SecurityUtils.currentUserId
+        val userId = currentUser.id()
         val exists = groupRepository.existsByUserIdAndName(userId, name)
         if (exists) {
             throw ArchiveException(ArchiveErrorCode.GROUP_ALREADY_EXISTS)
@@ -74,7 +75,7 @@ class GroupService(
     @Transactional
     @PreAuthorize("isAuthenticated() and @accessManager.isGroupOwner(#groupId)")
     fun updateGroup(groupId: UUID, name: String): Group {
-        val userId = SecurityUtils.currentUserId
+        val userId = currentUser.id()
         val exists = groupRepository.existsByUserIdAndName(userId, name)
         if (exists) {
             throw ArchiveException(ArchiveErrorCode.GROUP_ALREADY_EXISTS)
