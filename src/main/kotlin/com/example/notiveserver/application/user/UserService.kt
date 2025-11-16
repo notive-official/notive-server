@@ -34,21 +34,15 @@ class UserService(
         )
     }
 
+    @Transactional
     @PreAuthorize("isAuthenticated()")
-    fun uploadUserProfileImage(file: MultipartFile): UserDto {
+    fun uploadUserProfileImage(file: MultipartFile): String {
         val profileImagePath = s3StorageClient.saveImage(file, ImageCategory.PROFILE)
         val userId = currentUser.id()
         val user = userRepository.findByIdOrNull(userId)
             ?: throw UserException(UserErrorCode.USER_NOT_FOUND)
         user.profileImage = profileImagePath
-        userRepository.save(user)
-        return UserDto(
-            id = user.id!!,
-            name = user.name,
-            nickname = user.nickname,
-            email = user.email,
-            profileImagePath = user.profileImage
-        )
+        return profileImagePath
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -56,8 +50,9 @@ class UserService(
         val userId = currentUser.id()
         val user = userRepository.findByIdOrNull(userId)
             ?: throw UserException(UserErrorCode.USER_NOT_FOUND)
-        user.profileImage?.let { filePath ->
-            s3StorageClient.deleteImage(filePath)
-        }
+        val profileImagePath =
+            user.profileImage ?: throw UserException(UserErrorCode.USER_PROFILE_IMAGE_NOT_FOUND)
+        s3StorageClient.deleteImage(profileImagePath)
+        return profileImagePath
     }
 }
