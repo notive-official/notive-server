@@ -3,10 +3,12 @@ package com.example.notiveserver.infrastructure.security
 import com.example.notiveserver.infrastructure.security.dto.CustomUser
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.stereotype.Component
 import java.util.*
 
 
-object SecurityUtils {
+@Component
+class SecurityCurrentUserProvider : CurrentUserProvider {
     private val currentUser: CustomUser
         get() {
             val authentication = SecurityContextHolder.getContext().authentication
@@ -16,20 +18,16 @@ object SecurityUtils {
             return authentication.principal as CustomUser
         }
 
-    val currentUserId: UUID
-        get() = currentUser.getId()
+    override fun id(): UUID = currentUser.getId()
 
-    val currentUsername: String
-        get() = currentUser.getUsername()
+    override fun username(): String = currentUser.getUsername()
 
-    val currentAuthorities: Collection<GrantedAuthority>
-        get() = currentUser.getAuthorities()
+    override fun authorities(): Collection<GrantedAuthority> = currentUser.getAuthorities()
 
-    val isAuthenticated: Boolean
-        get() {
-            val authentication = SecurityContextHolder.getContext().authentication
-            return authentication != null &&
-                    authentication.isAuthenticated &&
-                    authentication.principal is CustomUser
-        }
+    override fun isAuthenticated(): Boolean {
+        val authentication = SecurityContextHolder.getContext().authentication
+        return authentication != null &&
+                authentication.isAuthenticated &&
+                authentication.principal is CustomUser
+    }
 }

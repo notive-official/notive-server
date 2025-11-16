@@ -8,7 +8,7 @@ import com.example.notiveserver.domain.model.archive.Bookmark
 import com.example.notiveserver.domain.repository.ArchiveRepository
 import com.example.notiveserver.domain.repository.BookmarkRepository
 import com.example.notiveserver.domain.repository.UserRepository
-import com.example.notiveserver.infrastructure.security.SecurityUtils
+import com.example.notiveserver.infrastructure.security.SecurityCurrentUserProvider
 import jakarta.transaction.Transactional
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -22,11 +22,12 @@ import kotlin.jvm.optionals.getOrElse
 class BookmarkService(
     private val bookmarkRepository: BookmarkRepository,
     private val userRepository: UserRepository,
-    private val archiveRepository: ArchiveRepository
+    private val archiveRepository: ArchiveRepository,
+    private val currentUser: SecurityCurrentUserProvider
 ) {
     fun isMarked(archiveId: UUID): Boolean {
-        if (!SecurityUtils.isAuthenticated) return false
-        val userId = SecurityUtils.currentUserId
+        if (!currentUser.isAuthenticated()) return false
+        val userId = currentUser.id()
         return bookmarkRepository
             .findByArchiveIdAndUserId(archiveId, userId)
             .map { it.isMarked }
@@ -35,7 +36,7 @@ class BookmarkService(
 
     @PreAuthorize("isAuthenticated()")
     fun markArchive(archiveId: UUID) {
-        val userId = SecurityUtils.currentUserId
+        val userId = currentUser.id()
         val bookmark = bookmarkRepository.findByArchiveIdAndUserId(archiveId, userId).getOrDefault(
             Bookmark.create(
                 isMarked = false,
@@ -52,7 +53,7 @@ class BookmarkService(
 
     @PreAuthorize("isAuthenticated()")
     fun unmarkArchive(archiveId: UUID) {
-        val userId = SecurityUtils.currentUserId
+        val userId = currentUser.id()
         val bookmark = bookmarkRepository.findByArchiveIdAndUserId(archiveId, userId).getOrElse {
             throw ArchiveException(ArchiveErrorCode.BOOKMARK_NOT_FOUND)
         }
@@ -66,7 +67,7 @@ class BookmarkService(
     @PreAuthorize("isAuthenticated()")
     @Transactional
     fun listUserBookmarks(pageOffset: Int, pageSize: Int): Page<BookmarkDto> {
-        val userId = SecurityUtils.currentUserId
+        val userId = currentUser.id()
         val pageable = PageRequest.of(pageOffset, pageSize)
         val pages =
             bookmarkRepository.findActiveBookmarkByUserIdOrderByUpdatedAtDesc(userId, pageable)

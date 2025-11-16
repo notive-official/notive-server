@@ -1,6 +1,6 @@
 package com.example.notiveserver.application.auth
 
-import com.example.notiveserver.infrastructure.security.SecurityUtils
+import com.example.notiveserver.infrastructure.security.SecurityCurrentUserProvider
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.stereotype.Service
@@ -9,7 +9,8 @@ import java.util.*
 
 @Service
 class TokenService(
-    private val stringRedisTemplate: StringRedisTemplate
+    private val stringRedisTemplate: StringRedisTemplate,
+    private val currentUser: SecurityCurrentUserProvider
 ) {
     companion object {
         const val REFRESH_TOKEN_KEY_PREFIX = "refreshToken:"
@@ -20,7 +21,7 @@ class TokenService(
 
     @PreAuthorize("isAuthenticated()")
     fun saveRefreshToken(token: String, ttl: Duration) {
-        val userId = SecurityUtils.currentUserId
+        val userId = currentUser.id()
         stringRedisTemplate.opsForValue()
             .set(userId.refreshTokenKey, token, ttl)
     }
@@ -30,7 +31,7 @@ class TokenService(
 
     @PreAuthorize("isAuthenticated()")
     fun deleteRefreshToken(): String? {
-        val userId = SecurityUtils.currentUserId
+        val userId = currentUser.id()
         return stringRedisTemplate.opsForValue().getAndDelete(userId.refreshTokenKey)
     }
 }

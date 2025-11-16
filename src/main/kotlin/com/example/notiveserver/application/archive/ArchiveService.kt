@@ -12,7 +12,7 @@ import com.example.notiveserver.domain.repository.ArchiveRepository
 import com.example.notiveserver.domain.repository.GroupRepository
 import com.example.notiveserver.domain.repository.UserRepository
 import com.example.notiveserver.infrastructure.s3.S3StorageClient
-import com.example.notiveserver.infrastructure.security.SecurityUtils
+import com.example.notiveserver.infrastructure.security.SecurityCurrentUserProvider
 import jakarta.transaction.Transactional
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -29,6 +29,7 @@ class ArchiveService(
     private val groupRepository: GroupRepository,
     private val userRepository: UserRepository,
     private val s3StorageClient: S3StorageClient,
+    private val currentUser: SecurityCurrentUserProvider
 ) {
 
     @Transactional
@@ -42,7 +43,7 @@ class ArchiveService(
         summary: String,
         groupId: UUID,
     ): Archive {
-        val userId = SecurityUtils.currentUserId
+        val userId = currentUser.id()
         val thumbnailPath = thumbnailImage?.let { file ->
             s3StorageClient.saveImage(file, ImageCategory.ARCHIVE_THUMBNAIL)
         }
@@ -71,7 +72,7 @@ class ArchiveService(
         summary: String,
         groupId: UUID,
     ): Archive {
-        val userId = SecurityUtils.currentUserId
+        val userId = currentUser.id()
         return archiveRepository.save(
             Archive.create(
                 thumbnailPath = thumbnailPath,
@@ -153,7 +154,7 @@ class ArchiveService(
         pageSize: Int,
         archiveType: ArchiveType?
     ): Page<ArchiveSummaryDto> {
-        val userId = SecurityUtils.currentUserId
+        val userId = currentUser.id()
         val pageable = PageRequest.of(pageOffset, pageSize)
         val pages = if (archiveType != null) {
             archiveRepository.findByWriterIdAndTypeOrderByCreatedAtDesc(
@@ -218,7 +219,7 @@ class ArchiveService(
     fun isArchiveOwner(archiveId: UUID): Boolean {
         try {
             val archive = archiveRepository.findByIdOrNull(archiveId)
-            return archive!!.writer.id == SecurityUtils.currentUserId
+            return archive!!.writer.id == currentUser.id()
         } catch (e: Exception) {
             return false
         }
