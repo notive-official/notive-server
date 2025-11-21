@@ -216,6 +216,14 @@ class ArchiveService(
         archiveRepository.deleteById(archiveId)
     }
 
+    @Transactional
+    @PreAuthorize("@accessManager.isArchiveOwner(#archiveId)")
+    fun deleteThumbnail(archiveId: UUID) {
+        val archive = archiveRepository.getReferenceById(archiveId)
+        archive.thumbnailPath?.let { s3StorageClient.deleteImage(it) }
+        archive.thumbnailPath = null
+    }
+
     fun isArchiveOwner(archiveId: UUID): Boolean {
         try {
             val archive = archiveRepository.findByIdOrNull(archiveId)
