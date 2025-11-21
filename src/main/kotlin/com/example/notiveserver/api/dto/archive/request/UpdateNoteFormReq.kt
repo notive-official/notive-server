@@ -6,6 +6,7 @@ import com.example.notiveserver.common.enums.ArchiveType
 import com.example.notiveserver.common.validation.annotation.ValidImageFile
 import jakarta.validation.Valid
 import jakarta.validation.constraints.AssertTrue
+import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import org.hibernate.validator.constraints.Length
 import org.springframework.web.multipart.MultipartFile
@@ -14,6 +15,9 @@ import java.util.*
 data class UpdateNoteFormReq(
     @field:ValidImageFile
     val thumbnailImage: MultipartFile? = null,
+
+    @field:NotNull
+    val isThumbnailDeleted: Boolean,
 
     @field:Length(min = 1, max = 64)
     val title: String? = null,

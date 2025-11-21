@@ -77,6 +77,7 @@ class ArchiveController(
         println(form.toString())
         val addedBlocks = form.addedBlocks
         val summary = archiveService.generateArchiveSummary(addedBlocks)
+        if (form.isThumbnailDeleted) archiveService.deleteThumbnail(archiveId)
         val archive =
             archiveService.updateArchive(
                 archiveId = archiveId,
