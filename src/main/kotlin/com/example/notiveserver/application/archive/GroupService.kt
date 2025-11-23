@@ -4,10 +4,10 @@ import com.example.notiveserver.application.archive.dto.GroupDetailDto
 import com.example.notiveserver.application.archive.dto.GroupSummaryDto
 import com.example.notiveserver.common.exception.ArchiveException
 import com.example.notiveserver.common.exception.code.ArchiveErrorCode
-import com.example.notiveserver.domain.model.archive.Group
-import com.example.notiveserver.domain.repository.ArchiveRepository
-import com.example.notiveserver.domain.repository.GroupRepository
-import com.example.notiveserver.domain.repository.UserRepository
+import com.example.notiveserver.domain.group.model.Group
+import com.example.notiveserver.domain.archive.repository.ArchiveRepository
+import com.example.notiveserver.domain.group.repository.GroupRepository
+import com.example.notiveserver.domain.user.repository.UserRepository
 import com.example.notiveserver.infrastructure.security.SecurityCurrentUserProvider
 import jakarta.transaction.Transactional
 import org.springframework.data.domain.Page

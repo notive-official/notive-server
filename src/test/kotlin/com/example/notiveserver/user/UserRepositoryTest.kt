@@ -1,8 +1,8 @@
 package com.example.notiveserver.user
 
-import com.example.notiveserver.domain.model.user.Authority
-import com.example.notiveserver.domain.model.user.User
-import com.example.notiveserver.domain.repository.UserRepository
+import com.example.notiveserver.domain.user.model.Authority
+import com.example.notiveserver.domain.user.model.User
+import com.example.notiveserver.domain.user.repository.UserRepository
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.springframework.beans.factory.annotation.Autowired

@@ -1,8 +1,10 @@
-package com.example.notiveserver.domain.model.archive
+package com.example.notiveserver.domain.archive.model
 
 import com.example.notiveserver.common.enums.ArchiveType
-import com.example.notiveserver.domain.model.Timestamped
-import com.example.notiveserver.domain.model.user.User
+import com.example.notiveserver.domain.common.model.Timestamped
+import com.example.notiveserver.domain.group.model.Group
+import com.example.notiveserver.domain.tag.model.Tag
+import com.example.notiveserver.domain.user.model.User
 import com.fasterxml.jackson.annotation.JsonManagedReference
 import jakarta.persistence.*
 import org.hibernate.annotations.SQLDelete

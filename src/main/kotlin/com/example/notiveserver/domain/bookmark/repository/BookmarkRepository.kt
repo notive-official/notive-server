@@ -1,6 +1,6 @@
-package com.example.notiveserver.domain.repository
+package com.example.notiveserver.domain.bookmark.repository
 
-import com.example.notiveserver.domain.model.archive.Bookmark
+import com.example.notiveserver.domain.bookmark.model.Bookmark
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository

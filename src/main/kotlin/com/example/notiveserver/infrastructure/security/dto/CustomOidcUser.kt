@@ -1,6 +1,6 @@
 package com.example.notiveserver.infrastructure.security.dto
 
-import com.example.notiveserver.domain.model.user.User
+import com.example.notiveserver.domain.user.model.User
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.core.oidc.user.OidcUser

@@ -1,4 +1,4 @@
-package com.example.notiveserver.domain.model.user
+package com.example.notiveserver.domain.user.model
 
 import jakarta.persistence.*
 

@@ -1,6 +1,6 @@
-package com.example.notiveserver.domain.repository
+package com.example.notiveserver.domain.archive.repository
 
-import com.example.notiveserver.domain.model.archive.ArchiveBlock
+import com.example.notiveserver.domain.archive.model.ArchiveBlock
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 import java.util.*

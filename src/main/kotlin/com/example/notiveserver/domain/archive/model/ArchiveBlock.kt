@@ -1,7 +1,7 @@
-package com.example.notiveserver.domain.model.archive
+package com.example.notiveserver.domain.archive.model
 
 import com.example.notiveserver.common.enums.BlockType
-import com.example.notiveserver.domain.model.Timestamped
+import com.example.notiveserver.domain.common.model.Timestamped
 import jakarta.persistence.*
 import org.hibernate.annotations.Check
 import org.hibernate.annotations.DiscriminatorFormula

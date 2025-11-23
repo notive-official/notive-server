@@ -1,7 +1,7 @@
-package com.example.notiveserver.domain.repository
+package com.example.notiveserver.domain.archive.repository
 
 import com.example.notiveserver.common.enums.ArchiveType
-import com.example.notiveserver.domain.model.archive.Archive
+import com.example.notiveserver.domain.archive.model.Archive
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository

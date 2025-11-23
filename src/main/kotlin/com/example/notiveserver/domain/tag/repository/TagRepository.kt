@@ -1,6 +1,6 @@
-package com.example.notiveserver.domain.repository
+package com.example.notiveserver.domain.tag.repository
 
-import com.example.notiveserver.domain.model.archive.Tag
+import com.example.notiveserver.domain.tag.model.Tag
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 import java.util.*

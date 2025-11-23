@@ -1,6 +1,6 @@
-package com.example.notiveserver.domain.repository
+package com.example.notiveserver.domain.group.repository
 
-import com.example.notiveserver.domain.model.archive.Group
+import com.example.notiveserver.domain.group.model.Group
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository

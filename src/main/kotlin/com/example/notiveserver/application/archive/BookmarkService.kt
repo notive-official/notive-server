@@ -4,10 +4,10 @@ import com.example.notiveserver.application.archive.dto.ArchiveSummaryDto
 import com.example.notiveserver.application.archive.dto.BookmarkDto
 import com.example.notiveserver.common.exception.ArchiveException
 import com.example.notiveserver.common.exception.code.ArchiveErrorCode
-import com.example.notiveserver.domain.model.archive.Bookmark
-import com.example.notiveserver.domain.repository.ArchiveRepository
-import com.example.notiveserver.domain.repository.BookmarkRepository
-import com.example.notiveserver.domain.repository.UserRepository
+import com.example.notiveserver.domain.bookmark.model.Bookmark
+import com.example.notiveserver.domain.archive.repository.ArchiveRepository
+import com.example.notiveserver.domain.bookmark.repository.BookmarkRepository
+import com.example.notiveserver.domain.user.repository.UserRepository
 import com.example.notiveserver.infrastructure.security.SecurityCurrentUserProvider
 import jakarta.transaction.Transactional
 import org.springframework.data.domain.Page

@@ -1,4 +1,4 @@
-package com.example.notiveserver.domain.model.archive
+package com.example.notiveserver.domain.archive.model
 
 import com.example.notiveserver.common.enums.BlockType
 import jakarta.persistence.Column

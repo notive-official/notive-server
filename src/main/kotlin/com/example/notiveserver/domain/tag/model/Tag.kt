@@ -1,6 +1,7 @@
-package com.example.notiveserver.domain.model.archive
+package com.example.notiveserver.domain.tag.model
 
-import com.example.notiveserver.domain.model.Timestamped
+import com.example.notiveserver.domain.common.model.Timestamped
+import com.example.notiveserver.domain.archive.model.Archive
 import com.fasterxml.jackson.annotation.JsonBackReference
 import jakarta.persistence.*
 import org.hibernate.annotations.UuidGenerator

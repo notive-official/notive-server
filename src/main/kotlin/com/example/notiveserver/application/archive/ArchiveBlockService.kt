@@ -7,9 +7,9 @@ import com.example.notiveserver.common.enums.BlockType
 import com.example.notiveserver.common.enums.ImageCategory
 import com.example.notiveserver.common.exception.ArchiveException
 import com.example.notiveserver.common.exception.code.ArchiveErrorCode
-import com.example.notiveserver.domain.model.archive.ArchiveBlock
-import com.example.notiveserver.domain.repository.ArchiveBlockRepository
-import com.example.notiveserver.domain.repository.ArchiveRepository
+import com.example.notiveserver.domain.archive.model.ArchiveBlock
+import com.example.notiveserver.domain.archive.repository.ArchiveBlockRepository
+import com.example.notiveserver.domain.archive.repository.ArchiveRepository
 import com.example.notiveserver.infrastructure.s3.S3StorageClient
 import jakarta.transaction.Transactional
 import org.springframework.security.access.prepost.PreAuthorize

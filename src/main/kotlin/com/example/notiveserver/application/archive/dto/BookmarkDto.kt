@@ -1,6 +1,6 @@
 package com.example.notiveserver.application.archive.dto
 
-import com.example.notiveserver.domain.model.archive.Bookmark
+import com.example.notiveserver.domain.bookmark.model.Bookmark
 
 data class BookmarkDto(
     val id: Long,

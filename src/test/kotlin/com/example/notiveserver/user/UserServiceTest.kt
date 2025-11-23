@@ -5,9 +5,9 @@ import com.example.notiveserver.application.user.dto.UserDto
 import com.example.notiveserver.common.enums.ImageCategory
 import com.example.notiveserver.common.exception.UserException
 import com.example.notiveserver.common.exception.code.UserErrorCode
-import com.example.notiveserver.domain.model.user.Authority
-import com.example.notiveserver.domain.model.user.User
-import com.example.notiveserver.domain.repository.UserRepository
+import com.example.notiveserver.domain.user.model.Authority
+import com.example.notiveserver.domain.user.model.User
+import com.example.notiveserver.domain.user.repository.UserRepository
 import com.example.notiveserver.infrastructure.s3.S3StorageClient
 import com.example.notiveserver.infrastructure.security.SecurityCurrentUserProvider
 import io.mockk.every

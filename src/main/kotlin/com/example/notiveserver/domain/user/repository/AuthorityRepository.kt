@@ -1,6 +1,6 @@
-package com.example.notiveserver.domain.repository
+package com.example.notiveserver.domain.user.repository
 
-import com.example.notiveserver.domain.model.user.Authority
+import com.example.notiveserver.domain.user.model.Authority
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 

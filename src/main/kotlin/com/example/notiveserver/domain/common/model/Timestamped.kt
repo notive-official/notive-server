@@ -1,4 +1,4 @@
-package com.example.notiveserver.domain.model
+package com.example.notiveserver.domain.common.model
 
 import jakarta.persistence.Column
 import jakarta.persistence.EntityListeners

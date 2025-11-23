@@ -2,9 +2,9 @@ package com.example.notiveserver.infrastructure.security
 
 import com.example.notiveserver.common.exception.ArchiveException
 import com.example.notiveserver.common.exception.code.ArchiveErrorCode
-import com.example.notiveserver.domain.repository.ArchiveBlockRepository
-import com.example.notiveserver.domain.repository.ArchiveRepository
-import com.example.notiveserver.domain.repository.GroupRepository
+import com.example.notiveserver.domain.archive.repository.ArchiveBlockRepository
+import com.example.notiveserver.domain.archive.repository.ArchiveRepository
+import com.example.notiveserver.domain.group.repository.GroupRepository
 import org.springframework.stereotype.Component
 import java.util.*
 

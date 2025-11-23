@@ -1,9 +1,9 @@
 package com.example.notiveserver.infrastructure.security
 
 import com.example.notiveserver.common.enums.Role
-import com.example.notiveserver.domain.model.user.User
-import com.example.notiveserver.domain.repository.AuthorityRepository
-import com.example.notiveserver.domain.repository.UserRepository
+import com.example.notiveserver.domain.user.model.User
+import com.example.notiveserver.domain.user.repository.AuthorityRepository
+import com.example.notiveserver.domain.user.repository.UserRepository
 import com.example.notiveserver.infrastructure.security.dto.CustomOidcUser
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService

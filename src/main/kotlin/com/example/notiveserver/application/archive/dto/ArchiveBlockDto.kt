@@ -1,7 +1,7 @@
 package com.example.notiveserver.application.archive.dto
 
 import com.example.notiveserver.common.enums.BlockType
-import com.example.notiveserver.domain.model.archive.ArchiveBlock
+import com.example.notiveserver.domain.archive.model.ArchiveBlock
 
 data class ArchiveBlockDto(
     val id: Long,

@@ -1,6 +1,6 @@
-package com.example.notiveserver.domain.model.user
+package com.example.notiveserver.domain.user.model
 
-import com.example.notiveserver.domain.model.Timestamped
+import com.example.notiveserver.domain.common.model.Timestamped
 import jakarta.persistence.*
 import org.hibernate.annotations.SQLDelete
 import org.hibernate.annotations.SQLRestriction

@@ -2,9 +2,9 @@ package com.example.notiveserver.application.archive.dto
 
 import com.example.notiveserver.application.user.dto.UserSummaryDto
 import com.example.notiveserver.common.enums.ArchiveType
-import com.example.notiveserver.domain.model.archive.Archive
-import com.example.notiveserver.domain.model.archive.Group
-import com.example.notiveserver.domain.model.user.User
+import com.example.notiveserver.domain.archive.model.Archive
+import com.example.notiveserver.domain.group.model.Group
+import com.example.notiveserver.domain.user.model.User
 import java.util.*
 
 data class ArchiveMetaDto(

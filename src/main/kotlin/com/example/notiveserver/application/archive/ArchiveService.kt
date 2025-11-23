@@ -6,11 +6,11 @@ import com.example.notiveserver.application.archive.dto.BlockInfoDto
 import com.example.notiveserver.application.archive.dto.PayloadDto
 import com.example.notiveserver.common.enums.ArchiveType
 import com.example.notiveserver.common.enums.ImageCategory
-import com.example.notiveserver.domain.model.archive.Archive
-import com.example.notiveserver.domain.repository.ArchiveBlockRepository
-import com.example.notiveserver.domain.repository.ArchiveRepository
-import com.example.notiveserver.domain.repository.GroupRepository
-import com.example.notiveserver.domain.repository.UserRepository
+import com.example.notiveserver.domain.archive.model.Archive
+import com.example.notiveserver.domain.archive.repository.ArchiveBlockRepository
+import com.example.notiveserver.domain.archive.repository.ArchiveRepository
+import com.example.notiveserver.domain.group.repository.GroupRepository
+import com.example.notiveserver.domain.user.repository.UserRepository
 import com.example.notiveserver.infrastructure.s3.S3StorageClient
 import com.example.notiveserver.infrastructure.security.SecurityCurrentUserProvider
 import jakarta.transaction.Transactional
