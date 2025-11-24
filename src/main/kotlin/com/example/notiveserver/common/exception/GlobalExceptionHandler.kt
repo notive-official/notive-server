@@ -1,6 +1,6 @@
 package com.example.notiveserver.common.exception
 
-import com.example.notiveserver.api.dto.common.ErrorRes
+import com.example.notiveserver.api.dto.ErrorRes
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authorization.AuthorizationDeniedException

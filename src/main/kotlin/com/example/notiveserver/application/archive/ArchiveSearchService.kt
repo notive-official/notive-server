@@ -2,7 +2,6 @@ package com.example.notiveserver.application.archive
 
 import com.example.notiveserver.application.archive.dto.ArchiveSearchCondition
 import com.example.notiveserver.application.archive.dto.ArchiveSummaryDto
-import com.example.notiveserver.application.archive.dto.BookmarkDto
 import com.example.notiveserver.common.enums.ArchiveType
 import com.example.notiveserver.domain.archive.repository.ArchiveRepository
 import com.example.notiveserver.domain.bookmark.repository.BookmarkRepository
@@ -67,23 +66,6 @@ class ArchiveSearchService(
         return pages.map { archive ->
             val writer = archive.writer
             ArchiveSummaryDto.of(archive, writer)
-        }
-    }
-
-    @PreAuthorize("isAuthenticated()")
-    @Transactional
-    fun listBookmarkedArchivesByUser(pageable: Pageable): Page<BookmarkDto> {
-        val userId = currentUser.id()
-        val pages =
-            bookmarkRepository.findByUserIdAndIsMarkedTrueAndArchiveDeletedAtIsNull(
-                userId,
-                pageable
-            )
-        return pages.map { bookmark ->
-            BookmarkDto.of(
-                bookmark,
-                ArchiveSummaryDto.of(bookmark.archive, bookmark.archive.writer)
-            )
         }
     }
 }

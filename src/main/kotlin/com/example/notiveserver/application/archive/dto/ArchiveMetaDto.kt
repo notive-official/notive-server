@@ -1,5 +1,6 @@
 package com.example.notiveserver.application.archive.dto
 
+import com.example.notiveserver.application.group.dto.GroupSummaryDto
 import com.example.notiveserver.application.user.dto.UserSummaryDto
 import com.example.notiveserver.common.enums.ArchiveType
 import com.example.notiveserver.domain.archive.model.Archive

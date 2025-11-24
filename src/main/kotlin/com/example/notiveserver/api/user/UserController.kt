@@ -1,0 +1,59 @@
+package com.example.notiveserver.api.user
+
+import com.example.notiveserver.api.user.dto.HeaderRes
+import com.example.notiveserver.api.user.dto.ProfileRes
+import com.example.notiveserver.application.user.UserService
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
+import java.io.IOException
+
+
+@RestController
+@RequestMapping("/api/user")
+class UserController(
+    private val userService: UserService,
+) {
+
+    @GetMapping("/header")
+    fun header(): ResponseEntity<HeaderRes> {
+        val user = userService.findCurrentUser()
+        return ResponseEntity.ok(
+            HeaderRes(
+                user.nickname,
+                user.profileImagePath
+            )
+        )
+    }
+
+    @GetMapping("/profile")
+    fun profile(): ResponseEntity<ProfileRes> {
+        val user = userService.findCurrentUser()
+        return ResponseEntity.ok(
+            ProfileRes(
+                user.name,
+                user.nickname,
+                user.email,
+                user.profileImagePath
+            )
+        )
+    }
+
+    @PutMapping("/profile/image")
+    @Throws(IOException::class)
+    fun profileImageUpload(
+        @RequestParam("file") file: MultipartFile
+    ): ResponseEntity<ProfileRes> {
+        val user = userService.findCurrentUser()
+        user.profileImagePath?.let { userService.deleteUserProfileImage() }
+        val changedProfileImagePath = userService.uploadUserProfileImage(file)
+        return ResponseEntity.ok(
+            ProfileRes(
+                user.name,
+                user.nickname,
+                user.email,
+                changedProfileImagePath
+            )
+        )
+    }
+}
