@@ -1,10 +1,10 @@
 package com.example.notiveserver.user
 
-import com.example.notiveserver.api.controller.UserController
+import com.example.notiveserver.api.user.UserController
 import com.example.notiveserver.application.user.UserService
 import com.example.notiveserver.application.user.dto.UserDto
-import com.example.notiveserver.domain.model.user.Authority
-import com.example.notiveserver.domain.model.user.User
+import com.example.notiveserver.domain.user.model.Authority
+import com.example.notiveserver.domain.user.model.User
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
 import org.springframework.beans.factory.annotation.Autowired

@@ -1,7 +1,7 @@
 package com.example.notiveserver.user
 
-import com.example.notiveserver.application.auth.AuthService
-import com.example.notiveserver.application.auth.TokenService
+import com.example.notiveserver.application.user.AuthService
+import com.example.notiveserver.application.user.TokenService
 import com.example.notiveserver.application.user.UserService
 import com.example.notiveserver.infrastructure.security.JwtTokenProvider
 import org.mockito.Mockito.mock

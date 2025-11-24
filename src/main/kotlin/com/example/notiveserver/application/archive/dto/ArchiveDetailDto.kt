@@ -1,9 +1,9 @@
 package com.example.notiveserver.application.archive.dto
 
-import com.example.notiveserver.domain.model.archive.Archive
-import com.example.notiveserver.domain.model.archive.ArchiveBlock
-import com.example.notiveserver.domain.model.archive.Group
-import com.example.notiveserver.domain.model.user.User
+import com.example.notiveserver.domain.archive.model.Archive
+import com.example.notiveserver.domain.archive.model.ArchiveBlock
+import com.example.notiveserver.domain.group.model.Group
+import com.example.notiveserver.domain.user.model.User
 
 data class ArchiveDetailDto(
     val meta: ArchiveMetaDto,

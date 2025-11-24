@@ -1,21 +1,18 @@
 package com.example.notiveserver.application.archive
 
 import com.example.notiveserver.application.archive.dto.ArchiveDetailDto
-import com.example.notiveserver.application.archive.dto.ArchiveSummaryDto
 import com.example.notiveserver.application.archive.dto.BlockInfoDto
 import com.example.notiveserver.application.archive.dto.PayloadDto
 import com.example.notiveserver.common.enums.ArchiveType
 import com.example.notiveserver.common.enums.ImageCategory
-import com.example.notiveserver.domain.model.archive.Archive
-import com.example.notiveserver.domain.repository.ArchiveBlockRepository
-import com.example.notiveserver.domain.repository.ArchiveRepository
-import com.example.notiveserver.domain.repository.GroupRepository
-import com.example.notiveserver.domain.repository.UserRepository
+import com.example.notiveserver.domain.archive.model.Archive
+import com.example.notiveserver.domain.archive.repository.ArchiveBlockRepository
+import com.example.notiveserver.domain.archive.repository.ArchiveRepository
+import com.example.notiveserver.domain.group.repository.GroupRepository
+import com.example.notiveserver.domain.user.repository.UserRepository
 import com.example.notiveserver.infrastructure.s3.S3StorageClient
 import com.example.notiveserver.infrastructure.security.SecurityCurrentUserProvider
 import jakarta.transaction.Transactional
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.stereotype.Service
@@ -145,60 +142,6 @@ class ArchiveService(
                 }
             }
             .joinToString(" ").take(95)
-    }
-
-    @Transactional
-    @PreAuthorize("isAuthenticated()")
-    fun listArchivesByUser(
-        pageOffset: Int,
-        pageSize: Int,
-        archiveType: ArchiveType?
-    ): Page<ArchiveSummaryDto> {
-        val userId = currentUser.id()
-        val pageable = PageRequest.of(pageOffset, pageSize)
-        val pages = if (archiveType != null) {
-            archiveRepository.findByWriterIdAndTypeOrderByCreatedAtDesc(
-                userId,
-                archiveType,
-                pageable
-            )
-        } else {
-            archiveRepository.findByWriterIdOrderByCreatedAtDesc(userId, pageable)
-        }
-
-        return pages.map { archive ->
-            val writer = archive.writer
-            ArchiveSummaryDto.of(archive, writer)
-        }
-    }
-
-    @Transactional
-    @PreAuthorize("isAuthenticated() and @accessManager.isGroupOwner(#groupId)")
-    fun listArchivesByGroup(
-        pageOffset: Int,
-        pageSize: Int,
-        groupId: UUID
-    ): Page<ArchiveSummaryDto> {
-        val pageable = PageRequest.of(pageOffset, pageSize)
-        val pages = archiveRepository.findByGroupIdOrderByCreatedAtDesc(
-            groupId,
-            pageable
-        )
-        return pages.map { archive ->
-            val writer = archive.writer
-            ArchiveSummaryDto.of(archive, writer)
-        }
-    }
-
-    @Transactional
-    fun listPublicArchives(pageOffset: Int, pageSize: Int): Page<ArchiveSummaryDto> {
-        // TODO: 동적 쿼리 적용
-        val pageable = PageRequest.of(pageOffset, pageSize)
-        val pages = archiveRepository.findByIsPublicTrueOrderByCreatedAtDesc(pageable)
-        return pages.map { archive ->
-            val writer = archive.writer
-            ArchiveSummaryDto.of(archive, writer)
-        }
     }
 
     @Transactional
