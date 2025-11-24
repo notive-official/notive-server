@@ -1,17 +1,12 @@
 package com.example.notiveserver.application.archive
 
-import com.example.notiveserver.application.archive.dto.ArchiveSummaryDto
-import com.example.notiveserver.application.archive.dto.BookmarkDto
 import com.example.notiveserver.common.exception.ArchiveException
 import com.example.notiveserver.common.exception.code.ArchiveErrorCode
-import com.example.notiveserver.domain.bookmark.model.Bookmark
 import com.example.notiveserver.domain.archive.repository.ArchiveRepository
+import com.example.notiveserver.domain.bookmark.model.Bookmark
 import com.example.notiveserver.domain.bookmark.repository.BookmarkRepository
 import com.example.notiveserver.domain.user.repository.UserRepository
 import com.example.notiveserver.infrastructure.security.SecurityCurrentUserProvider
-import jakarta.transaction.Transactional
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.stereotype.Service
 import java.util.*
@@ -62,20 +57,5 @@ class BookmarkService(
         }
         bookmark.isMarked = false
         bookmarkRepository.save(bookmark)
-    }
-
-    @PreAuthorize("isAuthenticated()")
-    @Transactional
-    fun listUserBookmarks(pageOffset: Int, pageSize: Int): Page<BookmarkDto> {
-        val userId = currentUser.id()
-        val pageable = PageRequest.of(pageOffset, pageSize)
-        val pages =
-            bookmarkRepository.findActiveBookmarkByUserIdOrderByUpdatedAtDesc(userId, pageable)
-        return pages.map { bookmark ->
-            BookmarkDto.of(
-                bookmark,
-                ArchiveSummaryDto.of(bookmark.archive, bookmark.archive.writer)
-            )
-        }
     }
 }

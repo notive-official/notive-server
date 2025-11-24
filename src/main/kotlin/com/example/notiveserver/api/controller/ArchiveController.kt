@@ -1,19 +1,14 @@
 package com.example.notiveserver.api.controller
 
-import com.example.notiveserver.api.dto.archive.request.CreateNoteFormReq
-import com.example.notiveserver.api.dto.archive.request.CreateReferenceReq
-import com.example.notiveserver.api.dto.archive.request.UpdateNoteFormReq
-import com.example.notiveserver.api.dto.archive.request.UpdateReferenceReq
+import com.example.notiveserver.api.dto.archive.request.*
 import com.example.notiveserver.api.dto.archive.response.ArchiveDetailRes
 import com.example.notiveserver.api.dto.archive.response.ArchiveRes
 import com.example.notiveserver.api.dto.archive.response.ArchiveSummaryRes
 import com.example.notiveserver.api.dto.common.ListRes
 import com.example.notiveserver.api.dto.common.SliceMeta
 import com.example.notiveserver.api.dto.common.SliceRes
-import com.example.notiveserver.application.archive.ArchiveBlockService
-import com.example.notiveserver.application.archive.ArchiveService
-import com.example.notiveserver.application.archive.BookmarkService
-import com.example.notiveserver.application.archive.TagService
+import com.example.notiveserver.application.archive.*
+import com.example.notiveserver.application.archive.dto.ArchiveSearchCondition
 import com.example.notiveserver.application.archive.dto.BlockInfoDto
 import com.example.notiveserver.application.archive.dto.PayloadDto
 import com.example.notiveserver.application.oembed.OEmbedService
@@ -21,6 +16,8 @@ import com.example.notiveserver.common.enums.ArchiveType
 import com.example.notiveserver.common.enums.BlockType
 import com.example.notiveserver.common.policy.PageSize
 import jakarta.validation.constraints.Min
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -35,7 +32,8 @@ class ArchiveController(
     private val tagService: TagService,
     private val bookmarkService: BookmarkService,
     private val oEmbedService: OEmbedService,
-    private val archiveBlockService: ArchiveBlockService
+    private val archiveBlockService: ArchiveBlockService,
+    private val archiveSearchService: ArchiveSearchService
 ) {
     @PostMapping(
         "/note",
@@ -168,11 +166,17 @@ class ArchiveController(
     }
 
     @GetMapping("")
-    fun listUserArchives(
+    fun listArchivesByUser(
         @Min(0) @RequestParam("page") page: Int,
         @RequestParam("type") archiveType: ArchiveType?,
     ): ResponseEntity<SliceRes<ArchiveSummaryRes>> {
-        val pages = archiveService.listArchivesByUser(page, PageSize.SUB, archiveType)
+        val pages = archiveSearchService.listArchivesByUser(
+            pageable = PageRequest.of(
+                page, PageSize.SUB,
+                Sort.by(Sort.Direction.DESC, "createdAt")
+            ),
+            archiveType = archiveType
+        )
         val sliceMeta = SliceMeta.of(pages)
         val content = pages.content.map { archive ->
             val writer = archive.writer
@@ -183,10 +187,15 @@ class ArchiveController(
     }
 
     @GetMapping("/bookmarks")
-    fun listUserBookmarkArchives(
+    fun listBookmarkedArchivesByUser(
         @Min(0) @RequestParam("page") page: Int,
     ): ResponseEntity<SliceRes<ArchiveSummaryRes>> {
-        val pages = bookmarkService.listUserBookmarks(page, PageSize.SUB)
+        val pages = archiveSearchService.listBookmarkedArchivesByUser(
+            pageable = PageRequest.of(
+                page, PageSize.SUB,
+                Sort.by(Sort.Direction.DESC, "updatedAt")
+            )
+        )
         val sliceMeta = SliceMeta.of(pages)
         val content = pages.content.map { bookmark ->
             val writer = bookmark.archive.writer
@@ -197,7 +206,7 @@ class ArchiveController(
     }
 
     @GetMapping("/{archiveId}")
-    fun getArchive(
+    fun getDetailedArchive(
         @PathVariable archiveId: UUID,
     ): ResponseEntity<ArchiveDetailRes> {
         val archive = archiveService.getArchive(archiveId = archiveId)
@@ -216,6 +225,28 @@ class ArchiveController(
 
             )
         )
+    }
+
+    @GetMapping("/search")
+    fun searchArchives(
+        @Min(0) @RequestParam("page") page: Int,
+        condition: ArchiveSearchConditionReq
+    ): ResponseEntity<SliceRes<ArchiveSummaryRes>> {
+        val pages = archiveSearchService.searchArchives(
+            cond = ArchiveSearchCondition(tags = condition.tagList, q = condition.q),
+            pageable = PageRequest.of(
+                page,
+                PageSize.MAIN,
+                Sort.by(Sort.Direction.DESC, "createdAt")
+            )
+        )
+        val sliceMeta = SliceMeta.of(pages)
+        val content = pages.content.map { archive ->
+            val writer = archive.writer
+            val tags = tagService.listTagsByArchive(archiveId = archive.id)
+            ArchiveSummaryRes.of(archive = archive, tags = tags, writer = writer)
+        }
+        return ResponseEntity.ok(SliceRes(meta = sliceMeta, content = content))
     }
 
     @DeleteMapping("/{archiveId}")

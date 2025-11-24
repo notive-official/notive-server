@@ -7,11 +7,14 @@ import com.example.notiveserver.api.dto.common.SliceRes
 import com.example.notiveserver.api.dto.group.GroupDetailRes
 import com.example.notiveserver.api.dto.group.GroupReq
 import com.example.notiveserver.api.dto.group.GroupSummaryRes
+import com.example.notiveserver.application.archive.ArchiveSearchService
 import com.example.notiveserver.application.archive.ArchiveService
 import com.example.notiveserver.application.archive.GroupService
 import com.example.notiveserver.application.archive.TagService
 import com.example.notiveserver.common.policy.PageSize
 import jakarta.validation.constraints.Min
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
@@ -24,6 +27,7 @@ class GroupController(
     private val groupService: GroupService,
     private val archiveService: ArchiveService,
     private val tagService: TagService,
+    private val archiveSearchService: ArchiveSearchService,
 ) {
 
     @GetMapping("/metas")
@@ -63,7 +67,13 @@ class GroupController(
         @Min(0) @RequestParam("page") page: Int,
         @PathVariable groupId: UUID,
     ): ResponseEntity<SliceRes<ArchiveSummaryRes>> {
-        val pages = archiveService.listArchivesByGroup(page, PageSize.SUB, groupId = groupId)
+        val pages = archiveSearchService.listArchivesByGroup(
+            pageable = PageRequest.of(
+                page, PageSize.SUB,
+                Sort.by(Sort.Direction.DESC, "createdAt")
+            ),
+            groupId = groupId
+        )
         val sliceMeta = SliceMeta.of(pages)
         val content = pages.content.map { archive ->
             val writer = archive.writer

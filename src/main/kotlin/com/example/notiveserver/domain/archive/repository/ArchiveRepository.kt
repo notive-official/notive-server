@@ -9,22 +9,19 @@ import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
-interface ArchiveRepository : JpaRepository<Archive, UUID> {
+interface ArchiveRepository : JpaRepository<Archive, UUID>, ArchiveRepositoryCustom {
     fun findTop3ByGroupIdOrderByCreatedAtDesc(groupId: UUID): List<Archive>
     fun countByGroupId(groupId: UUID): Long
-    fun findByGroupIdOrderByCreatedAtDesc(groupId: UUID, pageable: Pageable): Page<Archive>
-    fun findByWriterIdOrderByCreatedAtDesc(
+    fun findByGroupId(groupId: UUID, pageable: Pageable): Page<Archive>
+    fun findByGroupId(groupId: UUID): List<Archive>
+    fun findByWriterId(
         userId: UUID,
         pageable: Pageable
     ): Page<Archive>
 
-    fun findByWriterIdAndTypeOrderByCreatedAtDesc(
+    fun findByWriterIdAndType(
         userId: UUID,
         type: ArchiveType,
         pageable: Pageable
     ): Page<Archive>
-
-    fun findByIsPublicTrueOrderByCreatedAtDesc(pageable: Pageable): Page<Archive>
-
-    fun deleteAllByGroupId(groupId: UUID)
 }

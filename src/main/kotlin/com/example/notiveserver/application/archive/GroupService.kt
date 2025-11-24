@@ -4,8 +4,9 @@ import com.example.notiveserver.application.archive.dto.GroupDetailDto
 import com.example.notiveserver.application.archive.dto.GroupSummaryDto
 import com.example.notiveserver.common.exception.ArchiveException
 import com.example.notiveserver.common.exception.code.ArchiveErrorCode
-import com.example.notiveserver.domain.group.model.Group
+import com.example.notiveserver.domain.archive.repository.ArchiveBlockRepository
 import com.example.notiveserver.domain.archive.repository.ArchiveRepository
+import com.example.notiveserver.domain.group.model.Group
 import com.example.notiveserver.domain.group.repository.GroupRepository
 import com.example.notiveserver.domain.user.repository.UserRepository
 import com.example.notiveserver.infrastructure.security.SecurityCurrentUserProvider
@@ -21,7 +22,8 @@ class GroupService(
     private val groupRepository: GroupRepository,
     private val archiveRepository: ArchiveRepository,
     private val userRepository: UserRepository,
-    private val currentUser: SecurityCurrentUserProvider
+    private val currentUser: SecurityCurrentUserProvider,
+    private val archiveBlockRepository: ArchiveBlockRepository
 ) {
     @PreAuthorize("isAuthenticated()")
     fun listAllGroupsByUser(): List<GroupSummaryDto> {
@@ -88,7 +90,10 @@ class GroupService(
     @Transactional
     @PreAuthorize("isAuthenticated() and @accessManager.isGroupOwner(#groupId)")
     fun deleteGroupWithArchives(groupId: UUID) {
-        archiveRepository.deleteAllByGroupId(groupId)
+        archiveRepository.findByGroupId(groupId).forEach {
+            archiveBlockRepository.deleteByArchiveId(it.id!!)
+            archiveRepository.delete(it)
+        }
         groupRepository.deleteById(groupId)
     }
 }
