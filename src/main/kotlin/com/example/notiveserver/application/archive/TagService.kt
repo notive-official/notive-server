@@ -3,10 +3,10 @@ package com.example.notiveserver.application.archive
 import com.example.notiveserver.common.exception.ArchiveException
 import com.example.notiveserver.common.exception.code.ArchiveErrorCode
 import com.example.notiveserver.common.util.SlugUtil
-import com.example.notiveserver.domain.model.archive.Tag
-import com.example.notiveserver.domain.repository.ArchiveRepository
-import com.example.notiveserver.domain.repository.TagRepository
-import com.example.notiveserver.infrastructure.security.SecurityUtils
+import com.example.notiveserver.domain.archive.repository.ArchiveRepository
+import com.example.notiveserver.domain.tag.model.Tag
+import com.example.notiveserver.domain.tag.repository.TagRepository
+import com.example.notiveserver.infrastructure.security.SecurityCurrentUserProvider
 import jakarta.transaction.Transactional
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.stereotype.Service
@@ -15,12 +15,17 @@ import java.util.*
 @Service
 class TagService(
     private val tagRepository: TagRepository,
-    private val archiveRepository: ArchiveRepository
+    private val archiveRepository: ArchiveRepository,
+    private val currentUser: SecurityCurrentUserProvider
 ) {
     @PreAuthorize("isAuthenticated()")
     fun listTagsOwnedByUser(): List<String> {
-        val userId = SecurityUtils.currentUserId
+        val userId = currentUser.id()
         return tagRepository.findDistinctByArchivesWriterIdOrderBySlugAsc(userId).map { it.slug }
+    }
+
+    fun listTagsByArchives(archiveIds: List<UUID>): List<String> {
+        return tagRepository.findDistinctTagsByArchiveIds(archiveIds).map { it.slug }
     }
 
     @Transactional

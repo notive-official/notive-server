@@ -1,6 +1,6 @@
 package com.example.notiveserver.common.enums
 
-import com.example.notiveserver.domain.model.archive.*
+import com.example.notiveserver.domain.archive.model.*
 
 enum class BlockType(
     val creator: (pos: Int, arc: Archive, payload: String) -> ArchiveBlock

@@ -1,0 +1,83 @@
+package com.example.notiveserver.application.bookmark
+
+import com.example.notiveserver.application.archive.dto.ArchiveSummaryDto
+import com.example.notiveserver.application.bookmark.dto.BookmarkDto
+import com.example.notiveserver.common.exception.ArchiveException
+import com.example.notiveserver.common.exception.code.ArchiveErrorCode
+import com.example.notiveserver.domain.archive.repository.ArchiveRepository
+import com.example.notiveserver.domain.bookmark.model.Bookmark
+import com.example.notiveserver.domain.bookmark.repository.BookmarkRepository
+import com.example.notiveserver.domain.user.repository.UserRepository
+import com.example.notiveserver.infrastructure.security.SecurityCurrentUserProvider
+import jakarta.transaction.Transactional
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.stereotype.Service
+import java.util.*
+import kotlin.jvm.optionals.getOrDefault
+import kotlin.jvm.optionals.getOrElse
+
+@Service
+class BookmarkService(
+    private val bookmarkRepository: BookmarkRepository,
+    private val userRepository: UserRepository,
+    private val archiveRepository: ArchiveRepository,
+    private val currentUser: SecurityCurrentUserProvider
+) {
+    fun isMarked(archiveId: UUID): Boolean {
+        if (!currentUser.isAuthenticated()) return false
+        val userId = currentUser.id()
+        return bookmarkRepository
+            .findByArchiveIdAndUserId(archiveId, userId)
+            .map { it.isMarked }
+            .orElse(false)
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    fun markArchive(archiveId: UUID) {
+        val userId = currentUser.id()
+        val bookmark = bookmarkRepository.findByArchiveIdAndUserId(archiveId, userId).getOrDefault(
+            Bookmark.create(
+                isMarked = false,
+                user = userRepository.getReferenceById(userId),
+                archive = archiveRepository.getReferenceById(archiveId)
+            )
+        )
+        if (bookmark.isMarked) {
+            throw ArchiveException(ArchiveErrorCode.BOOKMARK_ALREADY_EXISTS)
+        }
+        bookmark.isMarked = true
+        bookmarkRepository.save(bookmark)
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    fun unmarkArchive(archiveId: UUID) {
+        val userId = currentUser.id()
+        val bookmark = bookmarkRepository.findByArchiveIdAndUserId(archiveId, userId).getOrElse {
+            throw ArchiveException(ArchiveErrorCode.BOOKMARK_NOT_FOUND)
+        }
+        if (!bookmark.isMarked) {
+            throw ArchiveException(ArchiveErrorCode.BOOKMARK_NOT_FOUND)
+        }
+        bookmark.isMarked = false
+        bookmarkRepository.save(bookmark)
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @Transactional
+    fun listBookmarkedArchivesByUser(pageable: Pageable): Page<BookmarkDto> {
+        val userId = currentUser.id()
+        val pages =
+            bookmarkRepository.findByUserIdAndIsMarkedTrueAndArchiveDeletedAtIsNull(
+                userId,
+                pageable
+            )
+        return pages.map { bookmark ->
+            BookmarkDto.of(
+                bookmark,
+                ArchiveSummaryDto.of(bookmark.archive, bookmark.archive.writer)
+            )
+        }
+    }
+}

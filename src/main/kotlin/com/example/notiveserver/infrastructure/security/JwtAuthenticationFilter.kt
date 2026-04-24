@@ -1,6 +1,6 @@
 package com.example.notiveserver.infrastructure.security
 
-import com.example.notiveserver.application.auth.AuthService
+import com.example.notiveserver.application.user.AuthService
 import com.example.notiveserver.common.util.CookieUtil
 import io.jsonwebtoken.ExpiredJwtException
 import jakarta.servlet.FilterChain
